@@ -4,7 +4,7 @@ OBJECTS = analysis.o ast.o error.o genCondition.o genLabel.o genProgram.o \
 
 CC = gcc
 CFLAGS = -g -I ../inc -Wall -Wextra `pkg-config --cflags --libs glib-2.0`
-LFLAGS = -lglib-2.0 
+LFLAGS = -L/usr/local/opt/glib/lib -lglib-2.0 
 VALGRIND = G_SLICE=always-malloc G_DEBUG=gc-friendly valgrind --tool=memcheck \
            --leak-check=full --leak-resolution=high --track-origins=yes \
 
