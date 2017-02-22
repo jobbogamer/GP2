@@ -27,6 +27,9 @@ testData
 test
 old
 gp2compile
+Compiler/lib/hostParser.h
+Compiler/lib/hostParser.c
+Compiler/lib/hostLexer.c
 
 # Created by https://www.gitignore.io/api/macos
 
