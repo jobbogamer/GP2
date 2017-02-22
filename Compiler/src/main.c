@@ -175,19 +175,23 @@ void printMakeFile(string output_dir)
    fclose(makefile);
 } 
 
-   
+/* Enables the graph copying version of backtracking. */
 bool graph_copying = false;
+
+/* Enables full program tracing as used by the IDE. */
+bool program_tracing = false;
 
 int main(int argc, char **argv)
 {
    string const usage = "Usage:\n"
-                        "GP2-compile [-c] [-d] [-o <outdir>] <program_file> <host_file>\n"
+                        "GP2-compile [-c] [-d] [-t] [-o <outdir>] <program_file> <host_file>\n"
                         "GP2-compile -p <program_file>\n"
                         "GP2-compile -r <rule_file>\n"
                         "GP2-compile -h <host_file>\n\n"
                         "Flags:\n"
                         "-c - Enable graph copying.\n"
                         "-d - Compile program with GCC debugging flags.\n"
+                        "-t - Enable program tracing in the compiled program.\n"
                         "-r - Validate a GP 2 rule.\n"
                         "-p - Validate a GP 2 program.\n"
                         "-h - Validate a GP 2 host graph.\n"
@@ -250,6 +254,10 @@ int main(int argc, char **argv)
 
             case 'd':
                  debug_flags = true;
+                 break;
+
+            case 't':
+                 program_tracing = true;
                  break;
 
             case 'o':
