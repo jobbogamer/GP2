@@ -80,6 +80,7 @@ typedef char* string;
 
 extern FILE *log_file;
 extern bool graph_copying;
+extern bool program_tracing;
 
 /* Bison uses a global variable yylloc of type YYLTYPE to keep track of the 
  * locations of tokens and nonterminals. The scanner will set these values upon
