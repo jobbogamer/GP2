@@ -56,9 +56,16 @@ typedef enum {
 
 FILE* beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_name);
 void finishTraceFile(FILE* file);
+/**
+    Creates a new file at the given path and starts the program trace by adding
+    the opening <trace> tag to the file.
+*/
 
 void traceBeginContext(TracingContext context, char* name, FILE* file);
 void traceEndContext(TracingContext context, FILE* file);
+/**
+    Adds the closing </trace> tag to the tracefile and closes the file pointer.
+*/
 
 void traceRuleMatch(Morphism* match, bool failed, FILE* file);
 
