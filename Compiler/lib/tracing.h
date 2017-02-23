@@ -34,53 +34,54 @@
 
 
 typedef enum {
-  PROGRAM = 0,
-  BACKTRACKING,
-  RULE_CALL,
-  RULE_MATCH,
-  RULE_APPLICATION,
-  RULE_SET,
-  PROCEDURE,
-  LOOP,
-  LOOP_ITERATION,
-  IF_STATEMENT,
-  TRY_STATEMENT,
-  BRANCH_CONDITION,
-  BRANCH_THEN,
-  BRANCH_ELSE,
-  OR_STATEMENT,
-  OR_LEFT,
-  OR_RIGHT
+    PROGRAM = 0,
+    BACKTRACKING,
+    RULE_CALL,
+    RULE_MATCH,
+    RULE_APPLICATION,
+    RULE_SET,
+    PROCEDURE,
+    LOOP,
+    LOOP_ITERATION,
+    IF_STATEMENT,
+    TRY_STATEMENT,
+    BRANCH_CONDITION,
+    BRANCH_THEN,
+    BRANCH_ELSE,
+    OR_STATEMENT,
+    OR_LEFT,
+    OR_RIGHT
 } TracingContext;
 
 
-FILE* beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_name);
-void finishTraceFile(FILE* file);
 /**
     Creates a new file at the given path and starts the program trace by adding
     the opening <trace> tag to the file.
 */
+void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_name);
 
-void traceBeginContext(TracingContext context, char* name, FILE* file);
-void traceEndContext(TracingContext context, FILE* file);
 /**
     Adds the closing </trace> tag to the tracefile and closes the file pointer.
 */
+void finishTraceFile();
 
-void traceRuleMatch(Morphism* match, bool failed, FILE* file);
+void traceBeginContext(TracingContext context, char* name);
+void traceEndContext(TracingContext context);
 
-void traceDeletedEdge(Edge* edge, FILE* file);
-void traceDeletedNode(Node* node, FILE* file);
-void traceRemarkedEdge(Edge* edge, MarkType old_mark, FILE* file);
-void traceRemarkedEdge(Node* node, MarkType old_mark, FILE* file);
-void traceRelabelledEdge(Edge* edge, HostLabel old_label, FILE* file);
-void traceRelabelledNode(Node* node, HostLabel old_label, FILE* file);
-void traceCreatedEdge(Edge* edge, FILE* file);
-void traceCreatedNode(Node* node, FILE* file);
-void traceChangeRootNode(Node* old_root, Node* new_root, FILE* file);
+void traceRuleMatch(Morphism* match, bool failed);
 
-void traceBreak(FILE* file);
-void traceSkip(FILE* file);
-void traceFail(FILE* file);
+void traceDeletedEdge(Edge* edge);
+void traceDeletedNode(Node* node);
+void traceRemarkedEdge(Edge* edge, MarkType old_mark);
+void traceRemarkedNode(Node* node, MarkType old_mark);
+void traceRelabelledEdge(Edge* edge, HostLabel old_label);
+void traceRelabelledNode(Node* node, HostLabel old_label);
+void traceCreatedEdge(Edge* edge);
+void traceCreatedNode(Node* node);
+void traceChangeRootNode(Node* old_root, Node* new_root);
+
+void traceBreak();
+void traceSkip();
+void traceFail();
 
 #endif /* #ifndef INC_TRACING_H */
