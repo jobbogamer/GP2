@@ -1,4 +1,4 @@
-OBJECTS = debug.o graph.o graphStacks.o hostLexer.o hostParser.o label.o morphism.o
+OBJECTS = debug.o graph.o graphStacks.o hostLexer.o hostParser.o label.o morphism.o tracing.o
 
 CC = gcc
 # CFLAGS for debugging with gdb.
@@ -31,6 +31,7 @@ hostLexer.o:	../inc/globals.h hostParser.h
 hostParser.o:	../inc/globals.h graph.h label.h hostParser.h
 label.o:	../inc/globals.h label.h
 morphism.o:	../inc/globals.h graph.h label.h morphism.h
+tracing.o: ../inc/globals.h graph.h label.h morphism.h tracing.h
 
 # Cleanup
 clean:
