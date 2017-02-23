@@ -107,6 +107,7 @@ void generateRuntimeMain(List *declarations, int host_nodes, int host_edges,
    PTF("#include \"graphStacks.h\"\n");
    PTF("#include \"hostParser.h\"\n");
    PTF("#include \"morphism.h\"\n\n");
+   PTF("#include \"tracing.h\"\n\n");
 
    /* Declare the global morphism variables for each rule. */
    generateMorphismCode(declarations, 'd', true);
@@ -123,6 +124,7 @@ void generateRuntimeMain(List *declarations, int host_nodes, int host_edges,
    PTF("   freeMorphisms();\n");
    if(graph_copying) PTF("   freeGraphStack();\n");
    else PTF("   freeGraphChangeStack();\n");
+   if (program_tracing) { PTF("   finishTraceFile();\n"); }
    PTF("   closeLogFile();\n");
    #if defined GRAPH_TRACING || defined RULE_TRACING || defined BACKTRACK_TRACING
       PTF("   closeTraceFile();\n");
@@ -179,6 +181,13 @@ void generateRuntimeMain(List *declarations, int host_nodes, int host_edges,
    #if defined GRAPH_TRACING || defined RULE_TRACING || defined BACKTRACK_TRACING
       PTFI("openTraceFile(\"gp2.trace\");\n", 3);
    #endif
+
+   /* If program tracing is enabled, create a trace file using tracing.h (not
+   the same as the trace file when GRAPH_TRACING, RULE_TRACING, or BACKTRACK_TRACING
+   are defined). */
+   if (program_tracing) {
+      PTFI("beginTraceFile(\"gp2.gptrace\", \"%s\", \"%s\");\n", 3, "program_name", host_file);
+   }
 
    PTFI("host = buildHostGraph();\n", 3);
    PTFI("if(host == NULL)\n", 3);
