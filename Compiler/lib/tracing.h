@@ -54,26 +54,26 @@ typedef enum {
 } TracingContext;
 
 
-void createTraceFile(char* program_name, char* host_graph_name);
-void finishTraceFile();
+FILE* beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_name);
+void finishTraceFile(FILE* tracefile);
 
-void traceBeginContext(TracingContext context, char* name);
-void traceEndContext(TracingContext context);
+void traceBeginContext(TracingContext context, char* name, FILE* tracefile);
+void traceEndContext(TracingContext context, FILE* tracefile);
 
-void traceRuleMatch(Morphism* match, bool failed);
+void traceRuleMatch(Morphism* match, bool failed, FILE* tracefile);
 
-void traceDeletedEdge(Edge* edge);
-void traceDeletedNode(Node* node);
-void traceRemarkedEdge(Edge* edge, MarkType old_mark);
-void traceRemarkedEdge(Node* node, MarkType old_mark);
-void traceRelabelledEdge(Edge* edge, HostLabel old_label);
-void traceRelabelledNode(Node* node, HostLabel old_label);
-void traceCreatedEdge(Edge* edge);
-void traceCreatedNode(Node* node);
-void traceChangeRootNode(Node* old_root, Node* new_root);
+void traceDeletedEdge(Edge* edge, FILE* tracefile);
+void traceDeletedNode(Node* node, FILE* tracefile);
+void traceRemarkedEdge(Edge* edge, MarkType old_mark, FILE* tracefile);
+void traceRemarkedEdge(Node* node, MarkType old_mark, FILE* tracefile);
+void traceRelabelledEdge(Edge* edge, HostLabel old_label, FILE* tracefile);
+void traceRelabelledNode(Node* node, HostLabel old_label, FILE* tracefile);
+void traceCreatedEdge(Edge* edge, FILE* tracefile);
+void traceCreatedNode(Node* node, FILE* tracefile);
+void traceChangeRootNode(Node* old_root, Node* new_root, FILE* tracefile);
 
-void traceBreak();
-void traceSkip();
-void traceFail();
+void traceBreak(FILE* tracefile);
+void traceSkip(FILE* tracefile);
+void traceFail(FILE* tracefile);
 
 #endif /* #ifndef INC_TRACING_H */
