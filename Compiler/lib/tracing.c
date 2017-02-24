@@ -104,7 +104,7 @@ char* getContextTagName(TracingContext context) {
     }
 }
 
-void traceBeginContext(TracingContext context, char* name) {
+void traceBeginLabelledContext(TracingContext context, char* name) {
     /* First we need to determine the tag name to write. */
     char* tag_name = getContextTagName(context);
 
@@ -126,8 +126,8 @@ void traceBeginContext(TracingContext context, char* name) {
 }
 
 
-void traceBeginSimpleContext(TracingContext context) {
-    traceBeginContext(context, NULL);
+void traceBeginContext(TracingContext context) {
+    traceBeginLabelledContext(context, NULL);
 }
 
 
