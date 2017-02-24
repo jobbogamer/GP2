@@ -53,7 +53,9 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
 }
 
 void finishTraceFile() {
-    /* Add the final line to the file before closing it. */
+    /* Add the final line to the file before closing it. We need to decrease
+    context depth here because we're closing the <trace> context. */
+    context_depth -= 1;
     PTT("</trace>\n");
     fclose(tracefile);
 }
@@ -104,7 +106,7 @@ char* getContextTagName(TracingContext context) {
 
 void traceBeginContext(TracingContext context, char* name) {
     /* First we need to determine the tag name to write. */
-    char* tagName = getContextTagName(context);
+    char* tag_name = getContextTagName(context);
 
     /* The open tag should stay at the current indentation level, so write
     that to the file first before increasing the context depth.
@@ -112,13 +114,26 @@ void traceBeginContext(TracingContext context, char* name) {
     if (name) {
         /* The attribute label for a ruleset needs to be "rules", not "name". */
         char* label = (context == RULE_SET) ? "rules" : "name";
-        PTT("<%s %s=\"%s\">\n", tagName, label, name);
+        PTT("<%s %s=\"%s\">\n", tag_name, label, name);
     }
     else {
-        PTT("<%s>\n", tagName);
+        PTT("<%s>\n", tag_name);
     }
 
     /* Now we can increase the context depth, because any future writes should
     be indented inside this tag, until this context is closed. */
     context_depth += 1;
 }
+
+void traceEndContext(TracingContext context) {
+    /* At the end of a context, all we need to print is the closing tag, which
+    cannot have any attributes. This means we just need to get the tag name and
+    print it.
+    However, first we have to decrease the context depth, because the closing
+    tag has to be outdented from everything inside that tag. */
+    context_depth -= 1;
+    char* tag_name = getContextTagName(context);
+    PTT("</%s>\n", tag_name);
+}
+
+
