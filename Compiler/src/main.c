@@ -350,7 +350,7 @@ int main(int argc, char **argv)
          #ifdef DEBUG_PROGRAM
             printDotAST(gp_program, program_file);
          #endif
-         generateRuntimeMain(gp_program, host_nodes, host_edges, host_file, output_dir);
+         generateRuntimeMain(gp_program, host_nodes, host_edges, host_file, output_dir, program_file);
          makeLibHeaders(output_dir, headers, file_names, LIB_HEADERS);
          printMakeFile(output_dir);
       }

@@ -89,7 +89,7 @@ static void generateLoopStatement(GPCommand *command, CommandData data);
 static void generateFailureCode(string rule_name, CommandData data);
 
 void generateRuntimeMain(List *declarations, int host_nodes, int host_edges,
-                         string host_file, string output_dir)
+                         string host_file, string output_dir, string program_name)
 {
    int length = strlen(output_dir) + 7;
    char main_file[length];
@@ -186,7 +186,7 @@ void generateRuntimeMain(List *declarations, int host_nodes, int host_edges,
    the same as the trace file when GRAPH_TRACING, RULE_TRACING, or BACKTRACK_TRACING
    are defined). */
    if (program_tracing) {
-      PTFI("beginTraceFile(\"gp2.gptrace\", \"%s\", \"%s\");\n", 3, "program_name", host_file);
+      PTFI("beginTraceFile(\"gp2.gptrace\", \"%s\", \"%s\");\n", 3, program_name, host_file);
    }
 
    PTFI("host = buildHostGraph();\n", 3);
