@@ -8,12 +8,20 @@ export PATH="/Users/Josh/Dropbox/University/Project/Modified_Code/Compiler/Compi
 # Build the compiler.
 make build
 
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
 # Navigate to the location of the test GP2 program. This means the program name in the trace
 # will not have the giant path at the start.
 pushd /Users/Josh/Dropbox/University/Project/GP2_Programs/Invalid2ColourProgram/graphs/ > /dev/null
 
 # Compile the GP2 program.
 gp2compile -t ../programs/2colourable.gp2.tmp ./not_2_colourable.host
+
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 # Navigate to the compiled program.
 pushd /tmp/gp2/
@@ -23,6 +31,10 @@ cp /Users/Josh/Dropbox/University/Project/GP2_Programs/Invalid2ColourProgram/gra
 
 # Build the program.
 make
+
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 # Run the program.
 echo -e "\nRunning...\n"
