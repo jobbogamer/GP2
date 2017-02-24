@@ -46,10 +46,79 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
     <trace> tag with the program name and the host graph name. */
     PTT("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
     PTT("<trace program=\"%s\" input_graph=\"%s\">\n", program_name, host_graph_name);
+
+    /* Since everything from this point onwards is inside the <trace> tag, we
+    need to increase the context depth here. */
+    context_depth += 1;
 }
 
 void finishTraceFile() {
     /* Add the final line to the file before closing it. */
     PTT("</trace>\n");
     fclose(tracefile);
+}
+
+/**
+    Internal function which returns the tag name used for a given
+    TracingContext value.
+*/
+char* getContextTagName(TracingContext context) {
+    switch (context) {
+    case BACKTRACKING:
+        return "backtracking";
+    case RULE_CALL:
+        return "rule";
+    case RULE_MATCH:
+        return "match";
+    case RULE_APPLICATION:
+        return "apply";
+    case RULE_SET:
+        return "ruleset";
+    case PROCEDURE:
+        return "procedure";
+    case LOOP:
+        return "loop";
+    case LOOP_ITERATION:
+        return "iteration";
+    case IF_STATEMENT:
+        return "if";
+    case TRY_STATEMENT:
+        return "try";
+    case BRANCH_CONDITION:
+        return "condition";
+    case BRANCH_THEN:
+        return "then";
+    case BRANCH_ELSE:
+        return "else";
+    case OR_STATEMENT:
+        return "or";
+    case OR_LEFT:
+        return "leftBranch";
+    case OR_RIGHT:
+        return "rightBranch";
+    default:
+        printf("Invalid tracing context value received: %d\n", context);
+        return "";
+    }
+}
+
+void traceBeginContext(TracingContext context, char* name) {
+    /* First we need to determine the tag name to write. */
+    char* tagName = getContextTagName(context);
+
+    /* The open tag should stay at the current indentation level, so write
+    that to the file first before increasing the context depth.
+    If there is a name attribute, we also need to add that to the tag. */
+    if (name) {
+        /* The attribute label for a ruleset needs to be "rules", not "name". */
+        char* label = (context == RULE_SET) ? "rules" : "name";
+        PTT("<%s %s=\"%s\">\n", tagName, label, name);
+    }
+    else {
+        PTT("<%s>\n", tagName);
+    }
+
+    /* Now we can increase the context depth, because any future writes should
+    be indented inside this tag, until this context is closed. */
+    context_depth += 1;
 }
