@@ -66,6 +66,7 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
 void finishTraceFile();
 
 void traceBeginContext(TracingContext context, char* name);
+void traceBeginSimpleContext(TracingContext context);
 void traceEndContext(TracingContext context);
 
 void traceRuleMatch(Morphism* match, bool failed);

@@ -125,6 +125,12 @@ void traceBeginContext(TracingContext context, char* name) {
     context_depth += 1;
 }
 
+
+void traceBeginSimpleContext(TracingContext context) {
+    traceBeginContext(context, NULL);
+}
+
+
 void traceEndContext(TracingContext context) {
     /* At the end of a context, all we need to print is the closing tag, which
     cannot have any attributes. This means we just need to get the tag name and
