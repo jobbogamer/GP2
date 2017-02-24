@@ -18,6 +18,22 @@
 /** File pointer to the trace file created by beginTraceFile(). */
 FILE* tracefile = NULL;
 
+/** Current depth of context nesting. Used to determine indent level. */
+int context_depth = 0;
+
+/** Indentation width in spaces for the tracefile. */
+#define TRACE_INDENT 2
+
+/** Convenience macro for printing to the tracefile. Automatically indents
+the text to match the current context depth and indentation width. */
+#define PrintToTracefile(text, ...)                                                            \
+    do { fprintf(tracefile, "%*s" text, (context_depth * TRACE_INDENT), "", ##__VA_ARGS__); }  \
+    while(0);
+
+/** Shorthand for PrintToTracefile(). */
+#define PTT PrintToTracefile
+
+
 void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_name) {
     tracefile = fopen(tracefile_path, "w");
     if (tracefile == NULL) {
@@ -28,12 +44,12 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
 
     /* If we reach this point, the tracefile was opened, so insert the opening
     <trace> tag with the program name and the host graph name. */
-    fprintf(tracefile, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-    fprintf(tracefile, "<trace program=\"%s\" input_graph=\"%s\">\n", program_name, host_graph_name);
+    PTT("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+    PTT("<trace program=\"%s\" input_graph=\"%s\">\n", program_name, host_graph_name);
 }
 
 void finishTraceFile() {
     /* Add the final line to the file before closing it. */
-    fprintf(tracefile, "</trace>\n");
+    PTT("</trace>\n");
     fclose(tracefile);
 }
