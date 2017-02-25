@@ -668,8 +668,10 @@ void generateLoopStatement(GPCommand *command, CommandData data)
          #endif
       }
    }
+   if (program_tracing) { PTFI("traceBeginContext(\"loop\");\n", data.indent); }
    PTFI("while(success)\n", data.indent);
    PTFI("{\n", data.indent);
+   if (program_tracing) { PTFI("traceBeginContext(\"iteration\");\n", data.indent + 3); }
    generateProgramCode(command->loop_stmt.loop_body, loop_data);
    if(loop_data.restore_point >= 0)
    {
@@ -710,7 +712,9 @@ void generateLoopStatement(GPCommand *command, CommandData data)
          }
       }
    }
+   if (program_tracing) { PTFI("traceEndContext(\"iteration\");\n", data.indent + 3); }
    PTFI("}\n", data.indent);
+   if (program_tracing) { PTFI("traceEndContext(\"loop\");\n", data.indent); }
    PTFI("success = true;\n", data.indent);
 }
 
