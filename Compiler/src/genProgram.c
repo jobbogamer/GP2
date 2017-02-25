@@ -328,6 +328,10 @@ static void generateProgramCode(GPCommand *command, CommandData data)
       case RULE_SET_CALL:
       {
            PTFI("/* Rule Set Call */\n", data.indent);
+           /* Ideally we would print the names of the rules in the ruleset in
+           the tracefile but the additional work required is not worth it for
+           the small (if any) gain it would bring in the editor. */
+           if (program_tracing) { PTFI("traceBeginContext(\"ruleset\");\n", data.indent); }
            PTFI("do\n", data.indent);
            PTFI("{\n", data.indent);
            CommandData new_data = data;
@@ -342,6 +346,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
               rules = rules->next;
            }
            PTFI("} while(false);\n", data.indent);
+           if (program_tracing) { PTFI("traceEndContext(\"ruleset\");\n", data.indent); }
            break;
       }
       case PROCEDURE_CALL:
