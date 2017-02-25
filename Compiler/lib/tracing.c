@@ -60,64 +60,22 @@ void finishTraceFile() {
     fclose(tracefile);
 }
 
-/**
-    Internal function which returns the tag name used for a given
-    TracingContext value.
-*/
-char* getContextTagName(TracingContext context) {
-    switch (context) {
-    case BACKTRACKING:
-        return "backtracking";
-    case RULE_CALL:
-        return "rule";
-    case RULE_MATCH:
-        return "match";
-    case RULE_APPLICATION:
-        return "apply";
-    case RULE_SET:
-        return "ruleset";
-    case PROCEDURE:
-        return "procedure";
-    case LOOP:
-        return "loop";
-    case LOOP_ITERATION:
-        return "iteration";
-    case IF_STATEMENT:
-        return "if";
-    case TRY_STATEMENT:
-        return "try";
-    case BRANCH_CONDITION:
-        return "condition";
-    case BRANCH_THEN:
-        return "then";
-    case BRANCH_ELSE:
-        return "else";
-    case OR_STATEMENT:
-        return "or";
-    case OR_LEFT:
-        return "leftBranch";
-    case OR_RIGHT:
-        return "rightBranch";
-    default:
-        printf("Invalid tracing context value received: %d\n", context);
-        return "";
-    }
-}
 
-void traceBeginLabelledContext(TracingContext context, char* name) {
-    /* First we need to determine the tag name to write. */
-    char* tag_name = getContextTagName(context);
+void traceBeginLabelledContext(char* context_type, char* label, char* label_value) {
+    /* Small guard against NULL values: if label is given but label_value is
+    NULL, set label_value to the empty string. */
+    if (label && !label_value) {
+        label_value = "";
+    }
 
     /* The open tag should stay at the current indentation level, so write
     that to the file first before increasing the context depth.
     If there is a name attribute, we also need to add that to the tag. */
-    if (name) {
-        /* The attribute label for a ruleset needs to be "rules", not "name". */
-        char* label = (context == RULE_SET) ? "rules" : "name";
-        PTT("<%s %s=\"%s\">\n", tag_name, label, name);
+    if (label) {
+        PTT("<%s %s=\"%s\">\n", context_type, label, label_value);
     }
     else {
-        PTT("<%s>\n", tag_name);
+        PTT("<%s>\n", context_type);
     }
 
     /* Now we can increase the context depth, because any future writes should
@@ -126,20 +84,24 @@ void traceBeginLabelledContext(TracingContext context, char* name) {
 }
 
 
-void traceBeginContext(TracingContext context) {
-    traceBeginLabelledContext(context, NULL);
+void traceBeginNamedContext(char* context_type, char* name) {
+    traceBeginLabelledContext(context_type, "name", name);
 }
 
 
-void traceEndContext(TracingContext context) {
+void traceBeginContext(char* context_type) {
+    traceBeginLabelledContext(context_type, NULL, NULL);
+}
+
+
+void traceEndContext(char* context_type) {
     /* At the end of a context, all we need to print is the closing tag, which
     cannot have any attributes. This means we just need to get the tag name and
     print it.
     However, first we have to decrease the context depth, because the closing
     tag has to be outdented from everything inside that tag. */
     context_depth -= 1;
-    char* tag_name = getContextTagName(context);
-    PTT("</%s>\n", tag_name);
+    PTT("</%s>\n", context_type);
 }
 
 

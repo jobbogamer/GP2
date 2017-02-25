@@ -33,27 +33,6 @@
 #include "label.h"
 
 
-typedef enum {
-    PROGRAM = 0,
-    BACKTRACKING,
-    RULE_CALL,
-    RULE_MATCH,
-    RULE_APPLICATION,
-    RULE_SET,
-    PROCEDURE,
-    LOOP,
-    LOOP_ITERATION,
-    IF_STATEMENT,
-    TRY_STATEMENT,
-    BRANCH_CONDITION,
-    BRANCH_THEN,
-    BRANCH_ELSE,
-    OR_STATEMENT,
-    OR_LEFT,
-    OR_RIGHT
-} TracingContext;
-
-
 /**
     Creates a new file at the given path and starts the program trace by adding
     the opening <trace> tag to the file.
@@ -65,9 +44,10 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
 */
 void finishTraceFile();
 
-void traceBeginLabelledContext(TracingContext context, char* name);
-void traceBeginContext(TracingContext context);
-void traceEndContext(TracingContext context);
+void traceBeginLabelledContext(char* context_type, char* label, char* label_value);
+void traceBeginNamedContext(char* context_type, char* name);
+void traceBeginContext(char* context_type);
+void traceEndContext(char* context_type);
 
 void traceRuleMatch(Morphism* match, bool failed);
 
