@@ -448,6 +448,12 @@ static void generateProgramCode(GPCommand *command, CommandData data)
 static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
                              bool last_rule, CommandData data)
 {
+   /* If program tracing is enabled, start a new rule context here. Since break
+   statements are generated at various points, the context has to be ended in
+   each branch of the set of conditionals below, to ensure it is always ended
+   in every case. */
+   if (program_tracing) { PTFI("traceBeginNamedContext(\"rule\", \"%s\");\n", data.indent, rule_name); }
+
    if(empty_lhs)
    {
       #ifdef RULE_TRACING
@@ -463,6 +469,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
               data.indent, rule_name);
          PTFI("printGraph(host, trace_file);\n\n", data.indent);
       #endif
+      if (program_tracing) { PTFI("traceEndContext(\"rule\");\n", data.indent); }
       PTFI("success = true;\n\n", data.indent);
    }
    else
@@ -495,12 +502,16 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
          }
          else PTFI("initialiseMorphism(M_%s, host);\n", data.indent + 3, rule_name);
       }
+      if (program_tracing) { PTFI("traceEndContext(\"rule\");\n", data.indent + 3); }
       PTFI("success = true;\n", data.indent + 3);
       /* If this rule call is within a rule set, and it is not the last rule in that
        * set, print a break statement to exit the containing do-while loop of the rule
        * set call. */
       if(!last_rule) PTFI("break;\n", data.indent + 3);
       PTFI("}\n", data.indent);
+      /* If this isn't the last rule in a ruleset, we still need to end the tracing
+      context if the rule fails to match. */
+      if (!last_rule && program_tracing) { PTFI("traceEndContext(\"rule\");\n", data.indent); }
       /* Only generate failure code if the last rule in the set fails. */ 
       if(last_rule)
       {
@@ -510,6 +521,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
             PTFI("print_trace(\"Failed to match %s.\\n\\n\");\n",
                  data.indent + 3, rule_name);
          #endif
+         if (program_tracing) { PTFI("traceEndContext(\"rule\");\n", data.indent + 3); }
          CommandData new_data = data;
          new_data.indent = data.indent + 3;
          generateFailureCode(rule_name, new_data);
