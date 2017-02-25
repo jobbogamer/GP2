@@ -562,6 +562,13 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
 
    if(condition_data.context == IF_BODY) PTFI("/* If Statement */\n", data.indent);
    else PTFI("/* Try Statement */\n", data.indent);
+
+   if (program_tracing) {
+      char* backtracking = (condition_data.restore_point >= 0) ? "true" : "false";
+      char* branch_type = (condition_data.context == IF_BODY) ? "if" : "try";
+      PTFI("traceBeginLabelledContext(\"%s\", \"backtracking\", \"%s\");\n", data.indent, branch_type, backtracking);
+   }
+
    PTFI("/* Condition */\n", data.indent);
    if(condition_data.restore_point >= 0)
    {
@@ -579,10 +586,12 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
          #endif
       }
    }
+   if (program_tracing) { PTFI("traceBeginContext(\"condition\");\n", data.indent); } 
    PTFI("do\n", data.indent);
    PTFI("{\n", data.indent);
    generateProgramCode(command->cond_branch.condition, condition_data);
    PTFI("} while(false);\n\n", data.indent);
+   if (program_tracing) { PTFI("traceEndContext(\"condition\");\n", data.indent); } 
 
    if(condition_data.context == IF_BODY)
    {
@@ -608,7 +617,9 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
    PTFI("/* Then Branch */\n", data.indent);
    PTFI("if(success)\n", data.indent);
    PTFI("{\n", data.indent);
+   if (program_tracing) { PTFI("traceBeginContext(\"then\");\n", data.indent + 3); } 
    generateProgramCode(command->cond_branch.then_command, new_data);
+   if (program_tracing) { PTFI("traceEndContext(\"then\");\n", data.indent + 3); } 
    PTFI("}\n", data.indent);
    PTFI("/* Else Branch */\n", data.indent);
    PTFI("else\n", data.indent);
@@ -633,8 +644,14 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
       }
    }
    PTFI("success = true;\n", new_data.indent); /* Reset success flag before executing else branch. */
+   if (program_tracing) { PTFI("traceBeginContext(\"else\");\n", data.indent + 3); } 
    generateProgramCode(command->cond_branch.else_command, new_data);
+   if (program_tracing) { PTFI("traceEndContext(\"else\");\n", data.indent + 3); } 
    PTFI("}\n", data.indent);
+   if (program_tracing) {
+      char* branch_type = (condition_data.context == IF_BODY) ? "if" : "try";
+      PTFI("traceEndContext(\"%s\");\n", data.indent, branch_type);
+   }
    if(data.context == IF_BODY || data.context == TRY_BODY) PTFI("break;\n", data.indent);
    return;
 }
