@@ -352,7 +352,9 @@ static void generateProgramCode(GPCommand *command, CommandData data)
       case PROCEDURE_CALL:
       {
            GPProcedure *procedure = command->proc_call.procedure;
+           if (program_tracing) { PTFI("traceBeginNamedContext(\"procedure\", \"%s\");\n", data.indent, procedure->name);}
            generateProgramCode(procedure->commands, data);
+           if (program_tracing) { PTFI("traceEndContext(\"procedure\");\n", data.indent); }
            break;
       }
       case IF_STATEMENT:
