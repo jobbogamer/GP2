@@ -44,9 +44,39 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
 */
 void finishTraceFile();
 
+/**
+    Starts a new context in the tracefile. This means an opening XML tag is
+    added and, until this context is closed, any future tracing will be nested
+    inside that tag.
+    A "labelled" context is one which has an attribute in the XML tag. The
+    parameters are interpreted to create a tag as follows:
+    <context_type label="label_value">
+    Contexts must be closed using traceEndContext() for the tracefile to be valid.
+*/
 void traceBeginLabelledContext(char* context_type, char* label, char* label_value);
+
+/**
+    Convenience function for traceBeginLabelledContext(). Defaults the 'label'
+    parameter to "name", resulting in a tag as follows:
+    <context_type name="_name_"> (where _name_ is the value of the second argument
+    to this function).
+    Contexts must be closed using traceEndContext() for the tracefile to be valid.
+*/
 void traceBeginNamedContext(char* context_type, char* name);
+
+/**
+    Convenience function for traceBeginLabelledContext(). Defaults both the 'label'
+    and 'label_value' parameters to NULL, resulting in a tag with no attribute:
+    <context_type>
+    Contexts must be closed using traceEndContext() for the tracefile to be valid.
+*/
 void traceBeginContext(char* context_type);
+
+/**
+    Closes the most recently opened tracing context by adding a closing XML tag to
+    the tracefile. No argument is required since this module will keep track of
+    the current context and always closes contexts in LIFO order.
+*/
 void traceEndContext();
 
 void traceRuleMatch(Morphism* match, bool failed);
@@ -61,8 +91,27 @@ void traceCreatedEdge(Edge* edge);
 void traceCreatedNode(Node* node);
 void traceChangeRootNode(Node* old_root, Node* new_root);
 
+/**
+    Traces the use of a GP2 break statement in the program. Since break exits
+    the current loop, this function automatically closes all contexts up to,
+    but *not including* the most recent loop context.
+    This means that there should always be a traceEndContext() call after a 
+    GP2 loop, whether a break statement is used or not.
+*/
 void traceBreak();
+
+/**
+    Traces the use of a GP2 skip statement in the program.
+*/
 void traceSkip();
+
+/**
+    Traces the use of a GP2 fail statement in the program. Since fail terminates
+    the program, this function automatically closes all contexts except the
+    outermost one, the <trace> tag created by beginTraceFile().
+    This means that finishTraceFile() still needs to be called after a fail
+    statement is used in the program.
+*/
 void traceFail();
 
 #endif /* #ifndef INC_TRACING_H */
