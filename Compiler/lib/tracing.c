@@ -160,6 +160,27 @@ void traceEndContext() {
 }
 
 
+void traceRuleMatch(Morphism* morphism, bool failed) {
+    /* First we need to start a context called match. We need to print whether
+    the match failed, since there are two situations where the morphism will be
+    empty:
+    1. If the rule failed to match (failed = true)
+    2. If the LHS of the rule is empty (failed = false)
+    We need to be able to distinguish between these two cases. */
+    char* failed_value = (failed) ? "true" : "false";
+    traceBeginLabelledContext("match", "failed", failed_value);
+
+    /* If we know the match failed, we can skip this part, since we know the
+    match will be empty. A null morphism pointer also means the match is empty. */
+    if (!failed && morphism) {
+
+    }
+
+    /* Now we can end the match context. */
+    traceEndContext(/* match */);
+}
+
+
 void traceSkip() {
     /* Since skip does absolutely nothing, all we have to do is print that skip
     was used. Nothing about the program's state changes. */
