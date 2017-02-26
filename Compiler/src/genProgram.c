@@ -433,6 +433,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
 		 }
 	      }
            }
+           PTFI("traceBreak();\n", data.indent);
            PTFI("break;\n", data.indent);
            break;
            

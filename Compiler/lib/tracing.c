@@ -165,3 +165,19 @@ void traceSkip() {
     was used. Nothing about the program's state changes. */
     PTT("<skip />\n");
 }
+
+
+void traceBreak() {
+    PTT("<break />\n");
+
+    /* The break statement quits the current loop. This means that it ends all
+    contexts back to the most recent <loop> context. Iterate over the context
+    stack, closing each context, until we find the first <loop> context. The
+    <loop> context is always closed by the runtime program, so we don't need
+    to close that one. */
+    char* context_type;
+    while (strcmp(context_stack->context_type, "loop") != 0) {
+        context_type = popContextStack();
+        PTT("</%s>\n", context_type);
+    }
+}
