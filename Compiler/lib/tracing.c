@@ -181,3 +181,19 @@ void traceBreak() {
         PTT("</%s>\n", context_type);
     }
 }
+
+
+void traceFail() {
+    PTT("<fail />\n");
+
+    /* The fail statement essentially aborts the program. We need to close
+    every context that's currently open, *except* the outermost <trace> context
+    because that gets closed in finishTraceFile(), which does still get called
+    when fail is invoked. We're going to pop and close contexts from the stack
+    until the context depth reaches 1, because that's the trace context. */
+    char* context_type;
+    while (context_depth > 1) {
+        context_type = popContextStack();
+        PTT("</%s>\n", context_type);
+    }
+}
