@@ -393,7 +393,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            
       case FAIL_STATEMENT:
            PTFI("/* Fail Statement */\n", data.indent);
-           PTFI("traceFail();\n", data.indent);
+           if (program_tracing) { PTFI("traceFail();\n", data.indent); }
            generateFailureCode(NULL, data);
            break;
 
@@ -434,7 +434,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
 		 }
 	      }
            }
-           PTFI("traceBreak();\n", data.indent);
+           if (program_tracing) { PTFI("traceBreak();\n", data.indent); }
            PTFI("break;\n", data.indent);
            break;
            
