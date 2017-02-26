@@ -105,3 +105,8 @@ void traceEndContext(char* context_type) {
 }
 
 
+void traceSkip() {
+    /* Since skip does absolutely nothing, all we have to do is print that skip
+    was used. Nothing about the program's state changes. */
+    PTT("<skip />\n");
+}

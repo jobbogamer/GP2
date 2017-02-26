@@ -387,6 +387,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
       }
       case SKIP_STATEMENT:
            PTFI("/* Skip Statement */\n", data.indent);
+           if (program_tracing) { PTFI("traceSkip();\n", data.indent); }
            PTFI("success = true;\n", data.indent);
            break;
            
