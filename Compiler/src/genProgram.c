@@ -346,7 +346,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
               rules = rules->next;
            }
            PTFI("} while(false);\n", data.indent);
-           if (program_tracing) { PTFI("traceEndContext();\n", data.indent); }
+           if (program_tracing) { PTFI("traceEndContext(/* ruleset */);\n", data.indent); }
            break;
       }
       case PROCEDURE_CALL:
@@ -354,7 +354,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            GPProcedure *procedure = command->proc_call.procedure;
            if (program_tracing) { PTFI("traceBeginNamedContext(\"procedure\", \"%s\");\n", data.indent, procedure->name);}
            generateProgramCode(procedure->commands, data);
-           if (program_tracing) { PTFI("traceEndContext();\n", data.indent); }
+           if (program_tracing) { PTFI("traceEndContext(/* procedure */);\n", data.indent); }
            break;
       }
       case IF_STATEMENT:
@@ -378,15 +378,15 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            PTFI("{\n", data.indent);
            if (program_tracing) { PTFI("traceBeginContext(\"leftBranch\");\n", data.indent + 3); };
            generateProgramCode(command->or_stmt.left_command, new_data);
-           if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); };
+           if (program_tracing) { PTFI("traceEndContext(/* leftBranch */);\n", data.indent + 3); };
            PTFI("}\n", data.indent);
            PTFI("else\n", data.indent);
            PTFI("{\n", data.indent);
            if (program_tracing) { PTFI("traceBeginContext(\"rightBranch\");\n", data.indent + 3); };
            generateProgramCode(command->or_stmt.right_command, new_data);
-           if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); };
+           if (program_tracing) { PTFI("traceEndContext(/* rightBranch */);\n", data.indent + 3); };
            PTFI("}\n", data.indent);
-           if (program_tracing) { PTFI("traceEndContext();\n", data.indent); };
+           if (program_tracing) { PTFI("traceEndContext(/* or */);\n", data.indent); };
            if(data.context == IF_BODY || data.context == TRY_BODY) 
               PTFI("break;\n", data.indent);
            break;
@@ -485,7 +485,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
               data.indent, rule_name);
          PTFI("printGraph(host, trace_file);\n\n", data.indent);
       #endif
-      if (program_tracing) { PTFI("traceEndContext();\n", data.indent); }
+      if (program_tracing) { PTFI("traceEndContext(/* rule */);\n", data.indent); }
       PTFI("success = true;\n\n", data.indent);
    }
    else
@@ -518,7 +518,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
          }
          else PTFI("initialiseMorphism(M_%s, host);\n", data.indent + 3, rule_name);
       }
-      if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); }
+      if (program_tracing) { PTFI("traceEndContext(/* rule */);\n", data.indent + 3); }
       PTFI("success = true;\n", data.indent + 3);
       /* If this rule call is within a rule set, and it is not the last rule in that
        * set, print a break statement to exit the containing do-while loop of the rule
@@ -527,7 +527,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
       PTFI("}\n", data.indent);
       /* If this isn't the last rule in a ruleset, we still need to end the tracing
       context if the rule fails to match. */
-      if (!last_rule && program_tracing) { PTFI("traceEndContext();\n", data.indent); }
+      if (!last_rule && program_tracing) { PTFI("traceEndContext(/* rule */);\n", data.indent); }
       /* Only generate failure code if the last rule in the set fails. */ 
       if(last_rule)
       {
@@ -537,7 +537,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
             PTFI("print_trace(\"Failed to match %s.\\n\\n\");\n",
                  data.indent + 3, rule_name);
          #endif
-         if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); }
+         if (program_tracing) { PTFI("traceEndContext(/* rule */);\n", data.indent + 3); }
          CommandData new_data = data;
          new_data.indent = data.indent + 3;
          generateFailureCode(rule_name, new_data);
@@ -600,7 +600,7 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
    PTFI("{\n", data.indent);
    generateProgramCode(command->cond_branch.condition, condition_data);
    PTFI("} while(false);\n\n", data.indent);
-   if (program_tracing) { PTFI("traceEndContext();\n", data.indent); } 
+   if (program_tracing) { PTFI("traceEndContext(/* condition */);\n", data.indent); } 
 
    if(condition_data.context == IF_BODY)
    {
@@ -628,7 +628,7 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
    PTFI("{\n", data.indent);
    if (program_tracing) { PTFI("traceBeginContext(\"then\");\n", data.indent + 3); } 
    generateProgramCode(command->cond_branch.then_command, new_data);
-   if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); } 
+   if (program_tracing) { PTFI("traceEndContext(/* then */);\n", data.indent + 3); } 
    PTFI("}\n", data.indent);
    PTFI("/* Else Branch */\n", data.indent);
    PTFI("else\n", data.indent);
@@ -655,11 +655,11 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
    PTFI("success = true;\n", new_data.indent); /* Reset success flag before executing else branch. */
    if (program_tracing) { PTFI("traceBeginContext(\"else\");\n", data.indent + 3); } 
    generateProgramCode(command->cond_branch.else_command, new_data);
-   if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); } 
+   if (program_tracing) { PTFI("traceEndContext(/* else */);\n", data.indent + 3); } 
    PTFI("}\n", data.indent);
    if (program_tracing) {
       char* branch_type = (condition_data.context == IF_BODY) ? "if" : "try";
-      PTFI("traceEndContext(\"%s\");\n", data.indent, branch_type);
+      PTFI("traceEndContext(/* %s */);\n", data.indent, branch_type);
    }
    if(data.context == IF_BODY || data.context == TRY_BODY) PTFI("break;\n", data.indent);
    return;
@@ -738,9 +738,9 @@ void generateLoopStatement(GPCommand *command, CommandData data)
          }
       }
    }
-   if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); }
+   if (program_tracing) { PTFI("traceEndContext(/* iteration */);\n", data.indent + 3); }
    PTFI("}\n", data.indent);
-   if (program_tracing) { PTFI("traceEndContext();\n", data.indent); }
+   if (program_tracing) { PTFI("traceEndContext(/* loop */);\n", data.indent); }
    PTFI("success = true;\n", data.indent);
 }
 
