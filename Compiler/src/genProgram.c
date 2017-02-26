@@ -372,15 +372,21 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            CommandData new_data = data;
            new_data.indent = data.indent + 3;
            PTFI("/* OR Statement */\n", data.indent);
+           if (program_tracing) { PTFI("traceBeginContext(\"or\");\n", data.indent); };
            PTFI("int random = rand();\n", data.indent);
            PTFI("if((random %% 2) == 0)\n", data.indent);
            PTFI("{\n", data.indent);
+           if (program_tracing) { PTFI("traceBeginContext(\"leftBranch\");\n", data.indent + 3); };
            generateProgramCode(command->or_stmt.left_command, new_data);
+           if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); };
            PTFI("}\n", data.indent);
            PTFI("else\n", data.indent);
            PTFI("{\n", data.indent);
+           if (program_tracing) { PTFI("traceBeginContext(\"rightBranch\");\n", data.indent + 3); };
            generateProgramCode(command->or_stmt.right_command, new_data);
+           if (program_tracing) { PTFI("traceEndContext();\n", data.indent + 3); };
            PTFI("}\n", data.indent);
+           if (program_tracing) { PTFI("traceEndContext();\n", data.indent); };
            if(data.context == IF_BODY || data.context == TRY_BODY) 
               PTFI("break;\n", data.indent);
            break;
