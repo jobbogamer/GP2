@@ -18,7 +18,25 @@
 /** File pointer to the trace file created by beginTraceFile(). */
 FILE* tracefile = NULL;
 
-/** Current depth of context nesting. Used to determine indent level. */
+/** Structure to hold one element of the context stack. */
+typedef struct TracingContext {
+    char* context_type;
+    struct TracingContext* previous;
+} TracingContext;
+
+/** Stack of current contexts. This is required since some statements, namely
+break and fail, can exit more than one context at a time, and the compiled
+program does not keep track of the contexts it is in, because it doesn't need
+to for normal execution.
+It's valid to use a stack to determine the current nesting of contexts, because
+XML tags cannot overlap, e.g. <a><b></a></b> is invalid XML. Inner tags must be
+closed before outer ones, so a stack works perfectly. It also means that the
+traceEndContext() function doesn't need an argument.
+Each time a context is started, it should be added to the stack, and each time
+a context ends, it should be removed. */
+TracingContext* context_stack = NULL;
+
+/** Current depth of context stack. Used to determine indent level. */
 int context_depth = 0;
 
 /** Indentation width in spaces for the tracefile. */
@@ -32,6 +50,45 @@ the text to match the current context depth and indentation width. */
 
 /** Shorthand for PrintToTracefile(). */
 #define PTT PrintToTracefile
+
+
+/** Internal function for adding an item to the TracingContext stack.
+Creates a new TracingContext object and adds it to the stack.
+There must be a matching number of popContextStack() calls to avoid leaking. */
+void pushContextStack(char* context_type) {
+    /* Create the new element and set its fields. */
+    TracingContext* element = (TracingContext*) malloc(sizeof(TracingContext));
+    element->context_type = context_type;
+    element->previous = context_stack;
+
+    /* Add it to the stack. Really this just means "update the stack pointer
+    to point at this element", since each element points to the previous item
+    on the stack. We also update the context depth. */
+    context_stack = element;
+    context_depth += 1;
+}
+
+
+/** Internal function for popping an item from the TracingContext stack.
+Frees the top element of the stack and moves the pointer to the next item. Then
+the context_type of the popped element is returned. */
+char* popContextStack() {
+    /* Get the context_type so it can be returned later. */
+    char* context_type = context_stack->context_type;
+
+    /* Take a pointer to the top of the stack so it can be freed after updating
+    the stack pointer. */
+    TracingContext* top_element = context_stack;
+
+    /* Update the stack pointer to point at the next item down and decrease
+    the current depth level. */
+    context_stack = context_stack->previous;
+    context_depth -= 1;
+
+    /* Free the memory and return the context_type. */
+    free(top_element);
+    return context_type;
+}
 
 
 void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_name) {
@@ -48,14 +105,15 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
     PTT("<trace program=\"%s\" input_graph=\"%s\">\n", program_name, host_graph_name);
 
     /* Since everything from this point onwards is inside the <trace> tag, we
-    need to increase the context depth here. */
-    context_depth += 1;
+    need to add it to the stack. */
+    pushContextStack("trace");
 }
 
 void finishTraceFile() {
-    /* Add the final line to the file before closing it. We need to decrease
-    context depth here because we're closing the <trace> context. */
-    context_depth -= 1;
+    /* Here we add the closing </trace> tag to the tracefile. We need to pop 
+    the stack first to decrease the depth, so that the tag is printed at the
+    correct indentation level. */
+    popContextStack();
     PTT("</trace>\n");
     fclose(tracefile);
 }
@@ -78,9 +136,8 @@ void traceBeginLabelledContext(char* context_type, char* label, char* label_valu
         PTT("<%s>\n", context_type);
     }
 
-    /* Now we can increase the context depth, because any future writes should
-    be indented inside this tag, until this context is closed. */
-    context_depth += 1;
+    /* Push the newly started context onto the stack. */
+    pushContextStack(context_type);
 }
 
 
@@ -94,13 +151,11 @@ void traceBeginContext(char* context_type) {
 }
 
 
-void traceEndContext(char* context_type) {
+void traceEndContext() {
     /* At the end of a context, all we need to print is the closing tag, which
-    cannot have any attributes. This means we just need to get the tag name and
-    print it.
-    However, first we have to decrease the context depth, because the closing
-    tag has to be outdented from everything inside that tag. */
-    context_depth -= 1;
+    cannot have any attributes. This means we just need to get the tag name by
+    popping the top of the context stack. */
+    char* context_type = popContextStack();
     PTT("</%s>\n", context_type);
 }
 

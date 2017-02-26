@@ -47,7 +47,7 @@ void finishTraceFile();
 void traceBeginLabelledContext(char* context_type, char* label, char* label_value);
 void traceBeginNamedContext(char* context_type, char* name);
 void traceBeginContext(char* context_type);
-void traceEndContext(char* context_type);
+void traceEndContext();
 
 void traceRuleMatch(Morphism* match, bool failed);
 
