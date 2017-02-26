@@ -106,12 +106,20 @@ void traceBreak();
 void traceSkip();
 
 /**
-    Traces the use of a GP2 fail statement in the program. Since fail terminates
-    the program, this function automatically closes all contexts except the
-    outermost one, the <trace> tag created by beginTraceFile().
-    This means that finishTraceFile() still needs to be called after a fail
-    statement is used in the program.
+    Traces the use of a GP2 fail statement in the program.
+    
+    If fail is called from the main body of the program pass true for both arguments,
+    and this function will automatically close all contexts except the
+    outermost one, the <trace> tag created by beginTraceFile(). finishTraceFile()
+    still needs to be called after a fail statement is used in the program.
+    
+    If fail is called inside an if or try condition, or in a loop, pass true as
+    the first argument and false as the second, and this function will close the
+    necessary contexts, up to the <condition> context.
+
+    If fail is called inside a loop, pass false for both arguments, since the loop
+    body is not exited early when calling fail.
 */
-void traceFail();
+void traceFail(bool escape_context, bool main_body);
 
 #endif /* #ifndef INC_TRACING_H */

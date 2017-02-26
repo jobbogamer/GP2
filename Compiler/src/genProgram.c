@@ -399,7 +399,6 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            
       case FAIL_STATEMENT:
            PTFI("/* Fail Statement */\n", data.indent);
-           if (program_tracing) { PTFI("traceFail();\n", data.indent); }
            generateFailureCode(NULL, data);
            break;
 
@@ -756,6 +755,7 @@ static void generateFailureCode(string rule_name, CommandData data)
     * failure, garbage collect and return 0. */
    if(data.context == MAIN_BODY)
    {
+      if (program_tracing && !rule_name) { PTFI("traceFail(true);\n", data.indent); }
       #ifdef GRAPH_TRACING
          PTFI("print_trace(\"Program failed. Final graph:\\n\");\n", data.indent);
          PTFI("printGraph(host, trace_file);\n", data.indent);
@@ -772,7 +772,13 @@ static void generateFailureCode(string rule_name, CommandData data)
       PTFI("return 0;\n", data.indent);
    }
    /* In other contexts, set the runtime success flag to false. */
-   else PTFI("success = false;\n", data.indent);
+   else {
+      if (program_tracing && !rule_name) {
+         char* exit_argument = (data.context == LOOP_BODY) ? "false" : "true"; 
+         PTFI("traceFail(%s, false);\n", data.indent, exit_argument);
+      }
+      PTFI("success = false;\n", data.indent);
+   }
 
    if(data.context == IF_BODY || data.context == TRY_BODY) PTFI("break;\n", data.indent);
    if(data.context == LOOP_BODY) 

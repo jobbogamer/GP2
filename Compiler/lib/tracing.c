@@ -183,17 +183,32 @@ void traceBreak() {
 }
 
 
-void traceFail() {
+void traceFail(bool escape_context, bool main_body) {
     PTT("<fail />\n");
 
-    /* The fail statement essentially aborts the program. We need to close
-    every context that's currently open, *except* the outermost <trace> context
-    because that gets closed in finishTraceFile(), which does still get called
-    when fail is invoked. We're going to pop and close contexts from the stack
-    until the context depth reaches 1, because that's the trace context. */
-    char* context_type;
-    while (context_depth > 1) {
-        context_type = popContextStack();
-        PTT("</%s>\n", context_type);
+    if (escape_context) {
+        if (main_body) {
+            /* The fail statement essentially aborts the program. We need to close
+            every context that's currently open, *except* the outermost <trace> context
+            because that gets closed in finishTraceFile(), which does still get called
+            when fail is invoked. We're going to pop and close contexts from the stack
+            until the context depth reaches 1, because that's the trace context. */
+            char* context_type;
+            while (context_depth > 1) {
+                context_type = popContextStack();
+                PTT("</%s>\n", context_type);
+            }
+        }
+        else {
+            /* In the non-terminating case, we still need to close some contexts
+            automatically, but not all of them. We need to stop if we see a
+            <condition> context, since that's the exit point when fail is used
+            in an if or try body. */
+            char* context_type;
+            while (strcmp(context_stack->context_type, "condition") != 0) {
+                context_type = popContextStack();
+                PTT("</%s>\n", context_type);
+            }
+        }
     }
 }
