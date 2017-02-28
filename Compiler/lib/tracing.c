@@ -48,8 +48,17 @@ the text to match the current context depth and indentation width. */
     do { fprintf(tracefile, "%*s" text, (context_depth * TRACE_INDENT), "", ##__VA_ARGS__); }  \
     while(0);
 
+/** Macro for appending to the current line of the tracefile, without adding
+indentation. Primarily used for writing the contents of GP2 lists. */
+#define AppendToTracefile(text, ...)                \
+    do { fprintf(tracefile, text, ##__VA_ARGS__); } \
+    while(0);
+
 /** Shorthand for PrintToTracefile(). */
 #define PTT PrintToTracefile
+
+/** Shorthand for AppendToTracefile(). */
+#define ATT AppendToTracefile
 
 
 /** Internal function for adding an item to the TracingContext stack.
@@ -173,7 +182,84 @@ void traceRuleMatch(Morphism* morphism, bool failed) {
     /* If we know the match failed, we can skip this part, since we know the
     match will be empty. A null morphism pointer also means the match is empty. */
     if (!failed && morphism) {
+        int index, id;
 
+        /* Iterate over the nodes in the morphism and add them to the trace. */
+        for (index = 0; index < morphism->nodes; index++) {
+            id = morphism->node_map[index].host_index;
+            PTT("<node id=\"%d\" />\n", id);
+        }
+
+        /* Iterate over the edges and and those. */
+        for (index = 0; index < morphism->edges; index++) {
+            id = morphism->edge_map[index].host_index;
+            PTT("<edge id=\"%d\" />\n", id);
+        }
+
+        /* Finally, iterate over the variable assignments found for this match.
+        These are indexed by "variable ID", not by their position in the list. */
+        for (id = 0; id < morphism->variables; id++) {
+            Assignment* assignment = &(morphism->assignment[id]);
+            switch(assignment->type) {
+                case 'i': /* integer assignment */
+                    PTT("<variable id=\"%d\" type=\"integer\" value=\"%d\" />\n", id, assignment->num);
+                    break;
+
+                case 's': /* string assignment */
+                    PTT("<variable id=\"%d\" type=\"string\" value=\"%s\" />\n", id, assignment->str);
+                    break;
+
+                case 'l': /* list assignment */
+                    /* Print the start of the variable tag to the file, but do not
+                    finish it. Each item in the list will be added one by one, and
+                    the tag will be finished at the end. */
+                    PTT("<variable id=\"%d\" type=\"list\" value=\"", id);
+
+                    /* Pointer to current item in the list */
+                    HostListItem* current = NULL;
+
+                    /* Check for an empty assignment, given by a NULL list. */
+                    if (assignment->list) { current = assignment->list->first; }
+
+                    /* A GP2 list is a linked list of HostListItem structs. Here
+                    we iterate over them until there is no next item, which
+                    means we have reached the end of the list. (This may be true
+                    from the beginning, if the list was empty. */
+                    while (current) {
+                        /* Append this item to the tracefile. If it's not the first
+                        one, we need to add a colon beforehand. */
+                        char* colon = (current->prev) ? ":" : "";
+                        switch(current->atom.type) {
+                        case 'i': /* integer item */
+                            ATT("%s%d", colon, current->atom.num);
+                            break;
+                        
+                        case 's': /* string item */
+                            /* Strings need to be surrounded by quotes but we're in
+                            an XML attribute at this point so the quotes need to be
+                            escaped in the tracefile. */
+                            ATT("%s\\\"%s\\\"", colon, current->atom.str);
+                            break;
+
+                        default:
+                            printf("Unknown variable type %c in list", current->atom.type);
+                            break;
+                        }
+
+                        /* Move on to the next item in the list. */
+                        current = current->next;
+                    }
+
+                    /* Now we have reached the end of the list, so finish the
+                    line in the tracefile. */
+                    ATT("\" />\n");
+                    break;
+
+                default:
+                    printf("Unknown variable type %c in morphism", morphism->assignment[index].type);
+                    break;
+            }
+        }
     }
 
     /* Now we can end the match context. */
