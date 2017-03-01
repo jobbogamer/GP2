@@ -472,10 +472,10 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
    if(empty_lhs)
    {
       /* Since a rule with an empty left hand side always matches, we can call
-      traceRuleMatch() here and pass failed = false. We will pass a null pointer
+      traceRuleMatch() here and pass success = true. We will pass a null pointer
       as the morphism, which indicates to the tracing module that the morphism
       is empty. */
-      if (program_tracing) { PTFI("traceRuleMatch(NULL, false);\n", data.indent); }
+      if (program_tracing) { PTFI("traceRuleMatch(NULL, true);\n", data.indent); }
       #ifdef RULE_TRACING
          PTFI("print_trace(\"Matched %s. (empty rule)\\n\\n\");\n", 
               data.indent, rule_name);

@@ -79,7 +79,7 @@ void traceBeginContext(char* context_type);
 */
 void traceEndContext();
 
-void traceRuleMatch(Morphism* match, bool failed);
+void traceRuleMatch(Morphism* match, bool success);
 
 void traceDeletedEdge(Edge* edge);
 void traceDeletedNode(Node* node);

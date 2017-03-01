@@ -192,7 +192,7 @@ static void generateMatchingCode(Rule *rule, bool predicate)
    {
       PTFI("bool match = match_%c%d(morphism);\n", 3, item, searchplan->first->index);
       /* Before resetting the morphism below, trace the match if tracing is enabled. */
-      if (program_tracing) { PTFI("traceRuleMatch(morphism, !match);\n", 3); }
+      if (program_tracing) { PTFI("traceRuleMatch(morphism, match);\n", 3); }
       /* Reset the matched flags in the host graph. This is normally done after
        * rule application, but predicate rules are not applied. */
       PTFI("initialiseMorphism(morphism, host);\n", 3);
@@ -202,12 +202,12 @@ static void generateMatchingCode(Rule *rule, bool predicate)
    {
       PTFI("if(match_%c%d(morphism))\n", 3, item, searchplan->first->index);
       PTFI("{\n", 3);
-      if (program_tracing) { PTFI("traceRuleMatch(morphism, false);\n", 6); }
+      if (program_tracing) { PTFI("traceRuleMatch(morphism, true);\n", 6); }
       PTFI("return true;\n", 6);
       PTFI("}\n", 3);
       PTFI("else\n", 3);
       PTFI("{\n", 3);
-      if (program_tracing) { PTFI("traceRuleMatch(morphism, true);\n", 6); }
+      if (program_tracing) { PTFI("traceRuleMatch(morphism, false);\n", 6); }
       PTFI("initialiseMorphism(morphism, host);\n", 6);
       PTFI("return false;\n", 6);
       PTFI("}\n", 3);
