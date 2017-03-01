@@ -100,6 +100,52 @@ char* popContextStack() {
 }
 
 
+/** Internal function which returns the context_type from the top of the stack
+without removing it from the stack. */
+char* peekContextStack() {
+    return context_stack->context_type;
+}
+
+
+/** Internal function for printing a GP2 list to the tracefile. */
+void traceGP2List(HostList* list) {
+    /* Pointer to current item in the list */
+    HostListItem* current = NULL;
+
+    /* Check for an empty assignment, given by a NULL list. */
+    if (list) { current = list->first; }
+
+    /* A GP2 list is a linked list of HostListItem structs. Here
+    we iterate over them until there is no next item, which
+    means we have reached the end of the list. (This may be true
+    from the beginning, if the list was empty. */
+    while (current) {
+        /* Append this item to the tracefile. If it's not the first
+        one, we need to add a colon beforehand. */
+        char* colon = (current->prev) ? ":" : "";
+        switch(current->atom.type) {
+        case 'i': /* integer item */
+            ATT("%s%d", colon, current->atom.num);
+            break;
+        
+        case 's': /* string item */
+            /* Strings need to be surrounded by quotes but we're in
+            an XML attribute at this point so the quotes need to be
+            escaped in the tracefile. */
+            ATT("%s\\\"%s\\\"", colon, current->atom.str);
+            break;
+
+        default:
+            printf("Unknown variable type %c in list", current->atom.type);
+            break;
+        }
+
+        /* Move on to the next item in the list. */
+        current = current->next;
+    }
+}
+
+
 void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_name) {
     tracefile = fopen(tracefile_path, "w");
     if (tracefile == NULL) {
@@ -215,40 +261,7 @@ void traceRuleMatch(Morphism* morphism, bool success) {
                     the tag will be finished at the end. */
                     PTT("<variable id=\"%d\" type=\"list\" value=\"", id);
 
-                    /* Pointer to current item in the list */
-                    HostListItem* current = NULL;
-
-                    /* Check for an empty assignment, given by a NULL list. */
-                    if (assignment->list) { current = assignment->list->first; }
-
-                    /* A GP2 list is a linked list of HostListItem structs. Here
-                    we iterate over them until there is no next item, which
-                    means we have reached the end of the list. (This may be true
-                    from the beginning, if the list was empty. */
-                    while (current) {
-                        /* Append this item to the tracefile. If it's not the first
-                        one, we need to add a colon beforehand. */
-                        char* colon = (current->prev) ? ":" : "";
-                        switch(current->atom.type) {
-                        case 'i': /* integer item */
-                            ATT("%s%d", colon, current->atom.num);
-                            break;
-                        
-                        case 's': /* string item */
-                            /* Strings need to be surrounded by quotes but we're in
-                            an XML attribute at this point so the quotes need to be
-                            escaped in the tracefile. */
-                            ATT("%s\\\"%s\\\"", colon, current->atom.str);
-                            break;
-
-                        default:
-                            printf("Unknown variable type %c in list", current->atom.type);
-                            break;
-                        }
-
-                        /* Move on to the next item in the list. */
-                        current = current->next;
-                    }
+                    traceGP2List(assignment->list);
 
                     /* Now we have reached the end of the list, so finish the
                     line in the tracefile. */
@@ -264,6 +277,47 @@ void traceRuleMatch(Morphism* morphism, bool success) {
 
     /* Now we can end the match context. */
     traceEndContext(/* match */);
+}
+
+
+void traceBeginRuleApplicationContext() {
+    traceBeginContext("apply");
+}
+
+
+void traceEndRuleApplicationContext() {
+    /* Since the generated code for deleting/relabelling/etc doesn't know if
+    it's the last operation in the rule application, it cannot close the
+    <deleted> or <created> or etc context, so we have to do that here. 
+    There will only be one context to close other than <apply>, because there
+    is no recursion or nesting in a rule application. */
+    if (strcmp("apply", peekContextStack()) != 0) {
+        traceEndContext();
+    }
+
+    /* Now we end the <apply> context. */
+    traceEndContext();
+}
+
+
+void traceDeletedEdge(Edge* edge) {
+    /* If the current context is not a <deleted> context, start one here.
+    This relies on the order things are done during a rule application, and
+    that all deletions (both edges and nodes) are done at the same time. 
+    See generateApplicationCode() in genRule.c for info. */
+    if (strcmp("deleted", peekContextStack()) != 0) {
+        traceBeginContext("deleted");
+    }
+
+    /* Now simply print the details of the edge. We print all the details so
+    that if we want to step backwards in the trace, we can recreate the edge
+    as it was before it was deleted.
+    Note we haven't finished the XML tag so that traceGP2List() can append
+    the edge's label to the tag. */
+    PTT("<edge id=\"%d\" source=\"%d\" target=\"%d\" mark=\"%d\" label=\"",
+        edge->index, edge->source, edge->target, edge->label.mark);
+    traceGP2List(edge->label.list);
+    ATT("\" />\n");
 }
 
 

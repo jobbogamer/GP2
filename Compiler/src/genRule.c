@@ -843,6 +843,9 @@ void generateApplicationCode(Rule *rule)
    PTH("void apply%s(Morphism *morphism, bool record_changes);\n", rule->name);
    PTF("void apply%s(Morphism *morphism, bool record_changes)\n", rule->name);
    PTF("{\n");
+
+   if (program_tracing) { PTFI("traceBeginRuleApplicationContext();\n", 3); }
+
    /* Generate code to retrieve the values assigned to the variables in the
     * matching phase. */
    int index;
@@ -903,7 +906,11 @@ void generateApplicationCode(Rule *rule)
          PTFI("pushRemovedEdge(edge->label, edge->source, edge->target, edge->index,\n", 6);
          PTFI("                edge->index < host->edges.size - 1);\n", 6);
          PTFI("}\n", 3);
-         PTFI("removeEdge(host, host_edge_index);\n\n", 3);   
+         if (program_tracing) {
+            PTFI("Edge* edge = getEdge(host, host_edge_index);\n", 3);
+            PTFI("traceDeletedEdge(edge);\n", 3);
+         } 
+         PTFI("removeEdge(host, host_edge_index);\n\n", 3);
       }
       else
       {
@@ -1131,6 +1138,7 @@ void generateApplicationCode(Rule *rule)
       PTFI("if(record_changes)\n", 3);
       PTFI("pushAddedEdge(host_edge_index, edge_array_size%d == host->edges.size);\n", 6, index);
    }
+   if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
    PTFI("/* Reset the morphism. */\n", 3);
    PTFI("initialiseMorphism(morphism, host);\n}\n\n", 3);
 }
