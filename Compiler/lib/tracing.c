@@ -109,6 +109,11 @@ char* peekContextStack() {
 
 /** Internal function for printing a GP2 list to the tracefile. */
 void traceGP2List(HostList* list) {
+    /* Start the output with a single quote, so that double quotes can be
+    used for strings. XML doesn't support escaping quotes using a backslash
+    so we have to do this instead. */
+    ATT("'");
+
     /* Pointer to current item in the list */
     HostListItem* current = NULL;
 
@@ -141,6 +146,9 @@ void traceGP2List(HostList* list) {
         /* Move on to the next item in the list. */
         current = current->next;
     }
+
+    /* Close the set of single quotes. */
+    ATT("'");
 }
 
 
@@ -256,16 +264,14 @@ void traceRuleMatch(Morphism* morphism, bool success) {
                 case 'l': /* list assignment */
                     /* Print the start of the variable tag to the file, but do not
                     finish it. Each item in the list will be added one by one, and
-                    the tag will be finished at the end. Note that we use a single
-                    quote for the value attribute, so that double quotes can be used
-                    to represent strings. */
-                    PTT("<variable id=\"%d\" type=\"list\" value='", id);
+                    the tag will be finished at the end. */
+                    PTT("<variable id=\"%d\" type=\"list\" value=", id);
 
                     traceGP2List(assignment->list);
 
                     /* Now we have reached the end of the list, so finish the
                     line in the tracefile. */
-                    ATT("' />\n");
+                    ATT(" />\n");
                     break;
 
                 default:
@@ -313,12 +319,11 @@ void traceDeletedEdge(Edge* edge) {
     that if we want to step backwards in the trace, we can recreate the edge
     as it was before it was deleted.
     Note we haven't finished the XML tag so that traceGP2List() can append
-    the edge's label to the tag. Also note that we use single quotes for the
-    label attribute, so that we can use double quotes to represent strings. */
-    PTT("<edge id=\"%d\" source=\"%d\" target=\"%d\" mark=\"%d\" label='",
+    the edge's label to the tag. */
+    PTT("<edge id=\"%d\" source=\"%d\" target=\"%d\" mark=\"%d\" label=",
         edge->index, edge->source, edge->target, edge->label.mark);
     traceGP2List(edge->label.list);
-    ATT("' />\n");
+    ATT(" />\n");
 }
 
 
