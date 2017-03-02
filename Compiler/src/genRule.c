@@ -736,31 +736,35 @@ void generateRemoveLHSCode(string rule_name)
    PTF("{\n");
 
    PTFI("int count;\n", 3);
+   PTFI("Edge* edge;\n", 3);
+   PTFI("Node* node;\n\n", 3);
    PTFI("for(count = 0; count < morphism->edges; count++)\n", 3);
-   PTFI("{\n", 3);                        
+   PTFI("{\n", 3);
+   PTFI("edge = getEdge(host, morphism->edge_map[count].host_index);\n", 6);                        
    PTFI("if(record_changes)\n", 6);
    PTFI("{\n", 6);
-   PTFI("Edge *edge = getEdge(host, morphism->edge_map[count].host_index);\n", 9);
    PTFI("/* A hole is created if the edge is not at the right-most index of the array. */\n", 9);
    PTFI("pushRemovedEdge(edge->label, edge->source, edge->target, edge->index,\n", 9);
    PTFI("                edge->index < host->edges.size - 1);\n", 9);  
    PTFI("}\n", 6);
+   if (program_tracing) { PTFI("traceDeletedEdge(edge);\n", 6); }
    PTFI("removeEdge(host, morphism->edge_map[count].host_index);\n", 6);
-   PTFI("}\n", 3);
-                                                                           
+   PTFI("}\n\n", 3);
+                                               
    PTFI("for(count = 0; count < morphism->nodes; count++)\n", 3);
-   PTFI("{\n", 3);                        
+   PTFI("{\n", 3);
+   PTFI("node = getNode(host, morphism->node_map[count].host_index);\n", 6);                        
    PTFI("if(record_changes)\n", 6);
    PTFI("{\n", 6);
-   PTFI("Node *node = getNode(host, morphism->node_map[count].host_index);\n", 9); 
    PTFI("/* A hole is created if the node is not at the right-most index of the array. */\n", 9);
    PTFI("pushRemovedNode(node->root, node->label, node->index,\n", 9);
    PTFI("                node->index < host->nodes.size - 1);\n", 9);  
    PTFI("}\n", 6);
+   if (program_tracing) { PTFI("traceDeletedNode(node);\n", 6); }
    PTFI("removeNode(host, morphism->node_map[count].host_index);\n", 6);
    PTFI("}\n", 3);
    PTFI("initialiseMorphism(morphism, NULL);\n", 3);
-   PTFI("}\n\n", 3);
+   PTF("}\n\n");
 }
 
 void generateAddRHSCode(Rule *rule)
