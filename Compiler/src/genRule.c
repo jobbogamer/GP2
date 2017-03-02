@@ -873,7 +873,8 @@ void generateApplicationCode(Rule *rule)
       }
    }
    bool label_declared = false, host_edge_index_declared = false,
-        host_node_index_declared = false;
+        host_node_index_declared = false,
+        edge_pointer_declared = false, node_pointer_declared = false;
    /* Host graph modifications are performed in the following order: 
     * (1) Delete/relabel edges.
     * (2) Delete/relabel nodes.
@@ -899,17 +900,22 @@ void generateApplicationCode(Rule *rule)
             host_edge_index_declared = true;
          }
          else PTFI("host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
+
+         if (!edge_pointer_declared) {
+            PTFI("Edge* edge = getEdge(host, host_edge_index);\n", 3);
+            edge_pointer_declared = true;
+         }
+         else {
+            PTFI("edge = getEdge(host, host_edge_index);\n", 3);
+         }
+
          PTFI("if(record_changes)\n", 3);
          PTFI("{\n", 3);
-         PTFI("Edge *edge = getEdge(host, host_edge_index);\n", 6);
          PTFI("/* A hole is created if the edge is not at the right-most index of the array. */\n", 6);
          PTFI("pushRemovedEdge(edge->label, edge->source, edge->target, edge->index,\n", 6);
          PTFI("                edge->index < host->edges.size - 1);\n", 6);
          PTFI("}\n", 3);
-         if (program_tracing) {
-            PTFI("Edge* edge = getEdge(host, host_edge_index);\n", 3);
-            PTFI("traceDeletedEdge(edge);\n", 3);
-         } 
+         if (program_tracing) { PTFI("traceDeletedEdge(edge);\n", 3); }
          PTFI("removeEdge(host, host_edge_index);\n\n", 3);
       }
       else
