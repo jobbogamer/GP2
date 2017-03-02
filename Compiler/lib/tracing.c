@@ -327,6 +327,27 @@ void traceDeletedEdge(Edge* edge) {
 }
 
 
+void traceDeletedNode(Node* node) {
+    /* If the current context is not a <deleted> context, start one here.
+    This relies on the order things are done during a rule application, and
+    that all deletions (both edges and nodes) are done at the same time. 
+    See generateApplicationCode() in genRule.c for info. */
+    if (strcmp("deleted", peekContextStack()) != 0) {
+        traceBeginContext("deleted");
+    }
+
+    /* Now simply print the details of the node. We print all the details so
+    that if we want to step backwards in the trace, we can recreate the node
+    as it was before it was deleted.
+    Note we haven't finished the XML tag so that traceGP2List() can append
+    the node's label to the tag. */
+    PTT("<node id=\"%d\" root=\"%s\" mark=\"%d\" label=",
+        node->index, (node->root) ? "true" : "false", node->label.mark);
+    traceGP2List(node->label.list);
+    ATT(" />\n");
+}
+
+
 void traceSkip() {
     /* Since skip does absolutely nothing, all we have to do is print that skip
     was used. Nothing about the program's state changes. */

@@ -975,14 +975,23 @@ void generateApplicationCode(Rule *rule)
             host_node_index_declared = true;
          }
          else PTFI("host_node_index = lookupNode(morphism, %d);\n", 3, index);
+
+         if (!node_pointer_declared) {
+            PTFI("Node* node = getNode(host, host_node_index);\n", 3);
+            node_pointer_declared = true;
+         }
+         else {
+            PTFI("node = getNode(host, host_node_index);\n", 3);
+         }
+
          /* Generate code to remove the node. */
          PTFI("if(record_changes)\n", 3);
          PTFI("{\n", 3);
-         PTFI("Node *node = getNode(host, host_node_index);\n", 6);
          PTFI("/* A hole is created if the node is not at the right-most index of the array. */\n", 6);
          PTFI("pushRemovedNode(node->root, node->label, node->index,\n", 6);
          PTFI("                node->index < host->nodes.size - 1);\n", 6);  
          PTFI("}\n", 3);
+         if (program_tracing) { PTFI("traceDeletedNode(node);\n", 3); }
          PTFI("removeNode(host, host_node_index);\n\n", 3);   
       }
       else
