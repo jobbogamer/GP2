@@ -85,10 +85,10 @@ void traceEndRuleApplicationContext();
 
 void traceDeletedEdge(Edge* edge);
 void traceDeletedNode(Node* node);
-void traceRemarkedEdge(Edge* edge, MarkType old_mark);
-void traceRemarkedNode(Node* node, MarkType old_mark);
-void traceRelabelledEdge(Edge* edge, HostLabel old_label);
-void traceRelabelledNode(Node* node, HostLabel old_label);
+void traceRemarkedEdge(Edge* edge, MarkType new_mark);
+void traceRemarkedNode(Node* node, MarkType new_mark);
+void traceRelabelledEdge(Edge* edge, HostLabel new_label);
+void traceRelabelledNode(Node* node, HostLabel new_label);
 void traceCreatedEdge(Edge* edge);
 void traceCreatedNode(Node* node);
 void traceChangeRootNode(Node* old_root, Node* new_root);

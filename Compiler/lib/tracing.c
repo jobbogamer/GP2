@@ -139,7 +139,7 @@ void traceGP2List(HostList* list) {
             break;
 
         default:
-            printf("Unknown variable type %c in list", current->atom.type);
+            printf("Unknown variable type %c in list\n", current->atom.type);
             break;
         }
 
@@ -344,6 +344,30 @@ void traceDeletedNode(Node* node) {
     PTT("<node id=\"%d\" root=\"%s\" mark=\"%d\" label=",
         node->index, (node->root) ? "true" : "false", node->label.mark);
     traceGP2List(node->label.list);
+    ATT(" />\n");
+}
+
+
+void traceRelabelledEdge(Edge* edge, HostLabel new_label) {
+    /* If the current context is not a <relabelled> context, end the previous
+    context (if it is not the <apply> context, and start one here.
+    This relies on the order things are done during a rule application, and
+    that all deletions (both edges and nodes) are done at the same time. 
+    See generateApplicationCode() in genRule.c for info. */
+    if (strcmp("relabelled", peekContextStack()) != 0) {
+        if (strcmp("apply", peekContextStack()) != 0) {
+            traceEndContext();
+        }
+        traceBeginContext("relabelled");
+    }
+
+    /* Print the details of the edge. All that is required is the ID of the
+    edge, the new label, and the old label. Nothing else has changed about the
+    edge, so it doesn't need recording. */
+    PTT("<edge id=\"%d\" old=", edge->index);
+    traceGP2List(edge->label.list);
+    ATT(" new=");
+    traceGP2List(new_label.list);
     ATT(" />\n");
 }
 
