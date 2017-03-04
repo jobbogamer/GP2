@@ -935,6 +935,7 @@ void generateApplicationCode(Rule *rule)
 
             if (!edge_pointer_declared) {
                PTFI("Edge* edge = getEdge(host, host_edge_index);\n", 3);
+               edge_pointer_declared = true;
             }
             else {
                PTFI("edge = getEdge(host, host_edge_index);\n", 3);
@@ -1025,6 +1026,7 @@ void generateApplicationCode(Rule *rule)
 
             if (!node_pointer_declared) {
                PTFI("Node* node = getNode(host, host_node_index);\n", 3);
+               node_pointer_declared = true;
             }
             else {
                PTFI("node = getNode(host, host_node_index);\n", 3);
