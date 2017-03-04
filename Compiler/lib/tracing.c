@@ -364,6 +364,14 @@ void traceRemarkedEdge(Edge* edge, MarkType new_mark) {
 }
 
 
+void traceRemarkedNode(Node* node, MarkType new_mark) {
+    /* Print the details of the node. All we need to record is the ID of the
+    node, the old mark, and the new mark. */
+    PTT("<remarkNode id=\"%d\" old=\"%d\" new=\"%d\" />\n",
+        node->index, node->label.mark, new_mark);
+}
+
+
 void traceSkip() {
     /* Since skip does absolutely nothing, all we have to do is print that skip
     was used. Nothing about the program's state changes. */

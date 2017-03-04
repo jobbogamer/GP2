@@ -1022,6 +1022,14 @@ void generateApplicationCode(Rule *rule)
                host_node_index_declared = true;
             }
             else PTFI("host_node_index = lookupNode(morphism, %d);\n", 3, index);
+
+            if (!node_pointer_declared) {
+               PTFI("Node* node = getNode(host, host_node_index);\n", 3);
+            }
+            else {
+               PTFI("node = getNode(host, host_node_index);\n", 3);
+            }
+
             RuleLabel label = rhs_node->label;
             PTFI("HostLabel label_n%d = getNodeLabel(host, host_node_index);\n", 3, index);
             if(rhs_node->relabelled)
@@ -1044,8 +1052,8 @@ void generateApplicationCode(Rule *rule)
                PTFI("if(record_changes) pushRelabelledNode(host_node_index, label_n%d);\n",
                     6, index);
                if (program_tracing) {
-                  PTFI("Node* node = getNode(host, host_node_index);\n", 6);
                   PTFI("traceRelabelledNode(node, label);\n", 6);
+                  PTFI("if (label_n%d.mark != label.mark) { traceRemarkedNode(node, label.mark); }\n", 6, index);
                }
                PTFI("relabelNode(host, host_node_index, label);\n", 6);
                PTFI("}\n", 3);
@@ -1057,6 +1065,7 @@ void generateApplicationCode(Rule *rule)
                /* Generate code to re-mark the edge. */
                PTFI("if(record_changes) pushRemarkedNode(host_node_index, label_n%d.mark);\n",
                     3, index);
+               if (program_tracing) { PTFI("traceRemarkedNode(node, %d);\n", 3, label.mark); }
                PTFI("changeNodeMark(host, host_node_index, %d);\n\n", 3, label.mark);
             }
          }
