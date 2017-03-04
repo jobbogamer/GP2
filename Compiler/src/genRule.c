@@ -738,6 +738,9 @@ void generateRemoveLHSCode(string rule_name)
    PTFI("int count;\n", 3);
    PTFI("Edge* edge;\n", 3);
    PTFI("Node* node;\n\n", 3);
+
+   if (program_tracing) { PTFI("traceBeginRuleApplicationContext();\n", 3); }
+
    PTFI("for(count = 0; count < morphism->edges; count++)\n", 3);
    PTFI("{\n", 3);
    PTFI("edge = getEdge(host, morphism->edge_map[count].host_index);\n", 6);                        
@@ -764,6 +767,7 @@ void generateRemoveLHSCode(string rule_name)
    PTFI("removeNode(host, morphism->node_map[count].host_index);\n", 6);
    PTFI("}\n", 3);
    PTFI("initialiseMorphism(morphism, NULL);\n", 3);
+   if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
    PTF("}\n\n");
 }
 
