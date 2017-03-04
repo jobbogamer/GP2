@@ -773,7 +773,11 @@ void generateAddRHSCode(Rule *rule)
    PTF("void apply%s(bool record_changes)\n", rule->name);
    PTF("{\n");
    PTFI("int index;\n", 3);
-   PTFI("HostLabel label;\n\n", 3);
+   PTFI("HostLabel label;\n", 3);
+   PTFI("Node* node;\n\n", 3);
+
+   if (program_tracing) { PTFI("traceBeginRuleApplicationContext();\n", 3); }
+
    /* Generate code to retrieve the values assigned to the variables in the
     * matching phase. */
    PTFI("/* Get the values of variables used in rule application. */\n", 3);
@@ -812,8 +816,14 @@ void generateAddRHSCode(Rule *rule)
       if(rule->adds_edges) PTFI("map[%d] = index;\n", 3, node->index);
       PTFI("/* If the node array size has not increased after the node addition, then\n", 3);
       PTFI("   the node was added to a hole in the array. */\n", 3);
-      PTFI("if(record_changes)\n", 3);
-      PTFI("pushAddedNode(index, node_array_size%d == host->nodes.size);\n", 6, index);
+      PTFI("if(record_changes) { ", 3);
+      PTF("pushAddedNode(index, node_array_size%d == host->nodes.size);", index);
+      PTF(" }\n");
+
+      if (program_tracing) {
+         PTFI("node = getNode(host, index);\n", 3);
+         PTFI("traceCreatedNode(node);\n", 3);
+      }
    }
    PTF("\n");
    for(index = 0; index < rule->rhs->edge_index; index++)
@@ -838,6 +848,7 @@ void generateAddRHSCode(Rule *rule)
       PTFI("if(record_changes)\n", 3);
       PTFI("pushAddedEdge(index, edge_array_size%d == host->edges.size);\n", 6, index);
    }     
+   if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
    PTF("}\n");
    return;
 }
@@ -1120,6 +1131,12 @@ void generateApplicationCode(Rule *rule)
          PTFI("int host_node_index;\n", 3);
          host_node_index_declared = true;
       }
+
+      if (!node_pointer_declared) {
+         PTFI("Node* node;\n", 3);
+         node_pointer_declared = true;
+      }
+
       PTFI("int node_array_size%d = host->nodes.size;\n", 3, index);
       if(node->label.length == 0 && node->label.mark == NONE)
          PTFI("host_node_index = addNode(host, %d, blank_label);\n", 3, node->root);
@@ -1136,8 +1153,14 @@ void generateApplicationCode(Rule *rule)
       if(rule->adds_edges) PTFI("rhs_node_map[%d] = host_node_index;\n", 3, node->index);
       PTFI("/* If the node array size has not increased after the node addition, then\n", 3);
       PTFI("   the node was added to a hole in the array. */\n", 3);
-      PTFI("if(record_changes)\n", 3);
-      PTFI("pushAddedNode(host_node_index, node_array_size%d == host->nodes.size);\n", 6, index);
+      PTFI("if(record_changes) { ", 3);
+      PTF("pushAddedNode(host_node_index, node_array_size%d == host->nodes.size);", index);
+      PTF(" }\n");
+
+      if (program_tracing) {
+         PTFI("node = getNode(host, host_node_index);\n", 3);
+         PTFI("traceCreatedNode(node);\n", 3);
+      }
    }   
    /* (4) Add edges. */
    bool source_target_declared = false;

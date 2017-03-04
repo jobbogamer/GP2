@@ -372,6 +372,14 @@ void traceRemarkedNode(Node* node, MarkType new_mark) {
 }
 
 
+void traceCreatedNode(Node* node) {
+    PTT("<createNode id=\"%d\", root=\"%s\", mark=\"%d\" label=",
+        node->index, (node->root) ? "true" : "false", node->label.mark);
+    traceGP2List(node->label.list);
+    ATT(" />\n");
+}
+
+
 void traceSkip() {
     /* Since skip does absolutely nothing, all we have to do is print that skip
     was used. Nothing about the program's state changes. */
