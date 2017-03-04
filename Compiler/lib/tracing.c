@@ -372,6 +372,30 @@ void traceRelabelledEdge(Edge* edge, HostLabel new_label) {
 }
 
 
+void traceRelabelledNode(Node* node, HostLabel new_label) {
+    /* If the current context is not a <relabelled> context, end the previous
+    context (if it is not the <apply> context, and start one here.
+    This relies on the order things are done during a rule application, and
+    that all deletions (both edges and nodes) are done at the same time. 
+    See generateApplicationCode() in genRule.c for info. */
+    if (strcmp("relabelled", peekContextStack()) != 0) {
+        if (strcmp("apply", peekContextStack()) != 0) {
+            traceEndContext();
+        }
+        traceBeginContext("relabelled");
+    }
+
+    /* Print the details of the node. All that is required is the ID of the
+    node, the new label, and the old label. Nothing else has changed about the
+    node, so it doesn't need recording. */
+    PTT("<node id=\"%d\" old=", node->index);
+    traceGP2List(node->label.list);
+    ATT(" new=");
+    traceGP2List(new_label.list);
+    ATT(" />\n");
+}
+
+
 void traceSkip() {
     /* Since skip does absolutely nothing, all we have to do is print that skip
     was used. Nothing about the program's state changes. */

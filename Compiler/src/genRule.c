@@ -1035,6 +1035,10 @@ void generateApplicationCode(Rule *rule)
                PTFI("{\n", 3);
                PTFI("if(record_changes) pushRelabelledNode(host_node_index, label_n%d);\n",
                     6, index);
+               if (program_tracing) {
+                  PTFI("Node* node = getNode(host, host_node_index);\n", 6);
+                  PTFI("traceRelabelledNode(node, label);\n", 6);
+               }
                PTFI("relabelNode(host, host_node_index, label);\n", 6);
                PTFI("}\n", 3);
             }
