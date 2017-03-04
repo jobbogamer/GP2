@@ -372,6 +372,14 @@ void traceRemarkedNode(Node* node, MarkType new_mark) {
 }
 
 
+void traceCreatedEdge(Edge* edge) {
+    PTT("<createEdge id=\"%d\" source=\"%d\" target=\"%d\" mark=\"%d\" label=",
+        edge->index, edge->source, edge->target, edge->label.mark);
+    traceGP2List(edge->label.list);
+    ATT(" />\n");
+}
+
+
 void traceCreatedNode(Node* node) {
     PTT("<createNode id=\"%d\", root=\"%s\", mark=\"%d\" label=",
         node->index, (node->root) ? "true" : "false", node->label.mark);

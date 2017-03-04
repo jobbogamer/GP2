@@ -779,6 +779,7 @@ void generateAddRHSCode(Rule *rule)
    PTFI("int index;\n", 3);
    PTFI("HostLabel label;\n", 3);
    PTFI("Node* node;\n\n", 3);
+   PTFI("Edge* edge;\n\n", 3);
 
    if (program_tracing) { PTFI("traceBeginRuleApplicationContext();\n", 3); }
 
@@ -851,6 +852,11 @@ void generateAddRHSCode(Rule *rule)
       PTFI("   the edge was added to a hole in the array. */\n", 3);
       PTFI("if(record_changes)\n", 3);
       PTFI("pushAddedEdge(index, edge_array_size%d == host->edges.size);\n", 6, index);
+
+      if (program_tracing) {
+         PTFI("edge = getEdge(host, index);\n", 3);
+         PTFI("traceCreatedEdge(edge);\n", 3);
+      }
    }     
    if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
    PTF("}\n");
@@ -1182,6 +1188,11 @@ void generateApplicationCode(Rule *rule)
          PTFI("int source, target;\n", 3);
          source_target_declared = true;
       }
+      if (!edge_pointer_declared) {
+         PTFI("Edge* edge;\n", 3);
+         edge_pointer_declared = true;
+      }
+
       PTFI("int edge_array_size%d = host->edges.size;\n", 3, index);
       /* The source and target edges are either nodes preserved by the rule or 
        * nodes added by the rule. 
@@ -1209,8 +1220,14 @@ void generateApplicationCode(Rule *rule)
       }
       PTFI("/* If the edge array size has not increased after the edge addition, then\n", 3);
       PTFI("   the edge was added to a hole in the array. */\n", 3);
-      PTFI("if(record_changes)\n", 3);
-      PTFI("pushAddedEdge(host_edge_index, edge_array_size%d == host->edges.size);\n", 6, index);
+      PTFI("if(record_changes) { ", 3);
+      PTF("pushAddedEdge(host_edge_index, edge_array_size%d == host->edges.size);", index);
+      PTF(" }\n");
+
+      if (program_tracing) {
+         PTFI("edge = getEdge(host, host_edge_index);\n", 3);
+         PTFI("traceCreatedEdge(edge);\n", 3);
+      }
    }
    if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
    PTFI("/* Reset the morphism. */\n", 3);
