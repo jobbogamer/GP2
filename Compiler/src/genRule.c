@@ -933,6 +933,13 @@ void generateApplicationCode(Rule *rule)
             }
             else PTFI("host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
 
+            if (!edge_pointer_declared) {
+               PTFI("Edge* edge = getEdge(host, host_edge_index);\n", 3);
+            }
+            else {
+               PTFI("edge = getEdge(host, host_edge_index);\n", 3);
+            }
+
             RuleLabel label = edge->interface->label;
             PTFI("HostLabel label_e%d = getEdgeLabel(host, host_edge_index);\n", 3, index);
             if(edge->interface->relabelled)
@@ -954,8 +961,8 @@ void generateApplicationCode(Rule *rule)
                PTFI("if(record_changes) pushRelabelledEdge(host_edge_index, label_e%d);\n",
                     6, index);
                if (program_tracing) {
-                  PTFI("Edge* edge = getEdge(host, host_edge_index);\n", 6);
                   PTFI("traceRelabelledEdge(edge, label);\n", 6);
+                  PTFI("if (label_e%d.mark != label.mark) { traceRemarkedEdge(edge, label.mark); }\n", 6, index);
                }
                PTFI("relabelEdge(host, host_edge_index, label);\n", 6);
                PTFI("}\n", 3);
@@ -967,6 +974,7 @@ void generateApplicationCode(Rule *rule)
                /* Generate code to re-mark the edge. */
                PTFI("if(record_changes) pushRemarkedEdge(host_edge_index, label_e%d.mark);\n",
                     3, index);
+               if (program_tracing) { PTFI("traceRemarkedEdge(edge, %d);\n", 3, label.mark); }
                PTFI("changeEdgeMark(host, host_edge_index, %d);\n\n", 3, label.mark);
             }
          }

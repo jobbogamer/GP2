@@ -307,20 +307,12 @@ void traceEndRuleApplicationContext() {
 
 
 void traceDeletedEdge(Edge* edge) {
-    /* If the current context is not a <deleted> context, start one here.
-    This relies on the order things are done during a rule application, and
-    that all deletions (both edges and nodes) are done at the same time. 
-    See generateApplicationCode() in genRule.c for info. */
-    if (strcmp("deleted", peekContextStack()) != 0) {
-        traceBeginContext("deleted");
-    }
-
-    /* Now simply print the details of the edge. We print all the details so
-    that if we want to step backwards in the trace, we can recreate the edge
-    as it was before it was deleted.
+    /* We print all the details about the edge so that if we want to step
+    backwards in the trace, we can recreate the edge as it was before it
+    was deleted.
     Note we haven't finished the XML tag so that traceGP2List() can append
     the edge's label to the tag. */
-    PTT("<edge id=\"%d\" source=\"%d\" target=\"%d\" mark=\"%d\" label=",
+    PTT("<deleteEdge id=\"%d\" source=\"%d\" target=\"%d\" mark=\"%d\" label=",
         edge->index, edge->source, edge->target, edge->label.mark);
     traceGP2List(edge->label.list);
     ATT(" />\n");
@@ -328,20 +320,12 @@ void traceDeletedEdge(Edge* edge) {
 
 
 void traceDeletedNode(Node* node) {
-    /* If the current context is not a <deleted> context, start one here.
-    This relies on the order things are done during a rule application, and
-    that all deletions (both edges and nodes) are done at the same time. 
-    See generateApplicationCode() in genRule.c for info. */
-    if (strcmp("deleted", peekContextStack()) != 0) {
-        traceBeginContext("deleted");
-    }
-
-    /* Now simply print the details of the node. We print all the details so
-    that if we want to step backwards in the trace, we can recreate the node
-    as it was before it was deleted.
+    /* We print all the details of the node so that if we want to step
+    backwards in the trace, we can recreate the node as it was before it
+    was deleted.
     Note we haven't finished the XML tag so that traceGP2List() can append
     the node's label to the tag. */
-    PTT("<node id=\"%d\" root=\"%s\" mark=\"%d\" label=",
+    PTT("<deleteNode id=\"%d\" root=\"%s\" mark=\"%d\" label=",
         node->index, (node->root) ? "true" : "false", node->label.mark);
     traceGP2List(node->label.list);
     ATT(" />\n");
@@ -349,22 +333,10 @@ void traceDeletedNode(Node* node) {
 
 
 void traceRelabelledEdge(Edge* edge, HostLabel new_label) {
-    /* If the current context is not a <relabelled> context, end the previous
-    context (if it is not the <apply> context, and start one here.
-    This relies on the order things are done during a rule application, and
-    that all deletions (both edges and nodes) are done at the same time. 
-    See generateApplicationCode() in genRule.c for info. */
-    if (strcmp("relabelled", peekContextStack()) != 0) {
-        if (strcmp("apply", peekContextStack()) != 0) {
-            traceEndContext();
-        }
-        traceBeginContext("relabelled");
-    }
-
     /* Print the details of the edge. All that is required is the ID of the
     edge, the new label, and the old label. Nothing else has changed about the
     edge, so it doesn't need recording. */
-    PTT("<edge id=\"%d\" old=", edge->index);
+    PTT("<relabelEdge id=\"%d\" old=", edge->index);
     traceGP2List(edge->label.list);
     ATT(" new=");
     traceGP2List(new_label.list);
@@ -373,26 +345,22 @@ void traceRelabelledEdge(Edge* edge, HostLabel new_label) {
 
 
 void traceRelabelledNode(Node* node, HostLabel new_label) {
-    /* If the current context is not a <relabelled> context, end the previous
-    context (if it is not the <apply> context, and start one here.
-    This relies on the order things are done during a rule application, and
-    that all deletions (both edges and nodes) are done at the same time. 
-    See generateApplicationCode() in genRule.c for info. */
-    if (strcmp("relabelled", peekContextStack()) != 0) {
-        if (strcmp("apply", peekContextStack()) != 0) {
-            traceEndContext();
-        }
-        traceBeginContext("relabelled");
-    }
-
     /* Print the details of the node. All that is required is the ID of the
     node, the new label, and the old label. Nothing else has changed about the
     node, so it doesn't need recording. */
-    PTT("<node id=\"%d\" old=", node->index);
+    PTT("<relabelNode id=\"%d\" old=", node->index);
     traceGP2List(node->label.list);
     ATT(" new=");
     traceGP2List(new_label.list);
     ATT(" />\n");
+}
+
+
+void traceRemarkedEdge(Edge* edge, MarkType new_mark) {
+    /* Print the details of the edge. All we need to record is the ID of the
+    edge, the old mark, and the new mark. */
+    PTT("<remarkEdge id=\"%d\" old=\"%d\" new=\"%d\" />\n",
+        edge->index, edge->label.mark, new_mark);
 }
 
 
