@@ -91,7 +91,8 @@ void traceRelabelledEdge(Edge* edge, HostLabel new_label);
 void traceRelabelledNode(Node* node, HostLabel new_label);
 void traceCreatedEdge(Edge* edge);
 void traceCreatedNode(Node* node);
-void traceChangeRootNode(Node* old_root, Node* new_root);
+void traceSetRootNode(Node* node);
+void traceRemoveRootNode(Node* node);
 
 /**
     Traces the use of a GP2 break statement in the program. Since break exits

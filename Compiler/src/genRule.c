@@ -1100,6 +1100,7 @@ void generateApplicationCode(Rule *rule)
                host_node_index_declared = true;
             }
             else PTFI("host_node_index = lookupNode(morphism, %d);\n", 3, index);
+
             /* The root is changed in two cases:
              * (1) The LHS node is rooted and the RHS node is non-rooted.
              * (2) The LHS node is non-rooted, the RHS node is rooted, and
@@ -1108,8 +1109,16 @@ void generateApplicationCode(Rule *rule)
             /* Case (1) */
             if(node->root && !node->interface->root) 
             {
+               if (!node_pointer_declared) {
+                  PTFI("Node* node = getNode(host, host_node_index);\n", 3);
+                  node_pointer_declared = true;
+               }
+               else {
+                  PTFI("node = getNode(host, host_node_index);\n", 3);
+               }
                PTFI("if(record_changes) pushChangedRootNode(host_node_index);\n", 3);
                PTFI("changeRoot(host, host_node_index);\n", 3);
+               if (program_tracing) { PTFI("traceRemoveRootNode(node);\n", 3); }
             }
             /* Case (2) */
             if(!node->root && node->interface->root) 
@@ -1119,6 +1128,7 @@ void generateApplicationCode(Rule *rule)
                PTFI("{\n", 3);
                PTFI("if(record_changes) pushChangedRootNode(host_node_index);\n", 6);
                PTFI("changeRoot(host, host_node_index);\n", 6);
+               if (program_tracing) { PTFI("traceSetRootNode(node%d);\n", 6, index); }
                PTFI("}\n", 3);
             }
          }

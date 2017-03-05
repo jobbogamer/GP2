@@ -388,6 +388,16 @@ void traceCreatedNode(Node* node) {
 }
 
 
+void traceSetRootNode(Node* node) {
+    PTT("<setRoot id=\"%d\" />\n", node->index);
+}
+
+
+void traceRemoveRootNode(Node* node) {
+    PTT("<removeRoot id=\"%d\" />\n", node->index);
+}
+
+
 void traceSkip() {
     /* Since skip does absolutely nothing, all we have to do is print that skip
     was used. Nothing about the program's state changes. */
