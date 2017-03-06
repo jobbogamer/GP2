@@ -286,26 +286,6 @@ void traceRuleMatch(Morphism* morphism, bool success) {
 }
 
 
-void traceBeginRuleApplicationContext() {
-    traceBeginContext("apply");
-}
-
-
-void traceEndRuleApplicationContext() {
-    /* Since the generated code for deleting/relabelling/etc doesn't know if
-    it's the last operation in the rule application, it cannot close the
-    <deleted> or <created> or etc context, so we have to do that here. 
-    There will only be one context to close other than <apply>, because there
-    is no recursion or nesting in a rule application. */
-    if (strcmp("apply", peekContextStack()) != 0) {
-        traceEndContext();
-    }
-
-    /* Now we end the <apply> context. */
-    traceEndContext();
-}
-
-
 void traceDeletedEdge(Edge* edge) {
     /* We print all the details about the edge so that if we want to step
     backwards in the trace, we can recreate the edge as it was before it

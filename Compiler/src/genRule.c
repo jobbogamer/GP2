@@ -739,7 +739,7 @@ void generateRemoveLHSCode(string rule_name)
    PTFI("Edge* edge;\n", 3);
    PTFI("Node* node;\n\n", 3);
 
-   if (program_tracing) { PTFI("traceBeginRuleApplicationContext();\n", 3); }
+   if (program_tracing) { PTFI("traceBeginContext(\"apply\");\n", 3); }
 
    PTFI("for(count = 0; count < morphism->edges; count++)\n", 3);
    PTFI("{\n", 3);
@@ -767,7 +767,7 @@ void generateRemoveLHSCode(string rule_name)
    PTFI("removeNode(host, morphism->node_map[count].host_index);\n", 6);
    PTFI("}\n", 3);
    PTFI("initialiseMorphism(morphism, NULL);\n", 3);
-   if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
+   if (program_tracing) { PTFI("traceEndContext(/* apply */);\n", 3); }
    PTF("}\n\n");
 }
 
@@ -781,7 +781,7 @@ void generateAddRHSCode(Rule *rule)
    PTFI("Node* node;\n\n", 3);
    PTFI("Edge* edge;\n\n", 3);
 
-   if (program_tracing) { PTFI("traceBeginRuleApplicationContext();\n", 3); }
+   if (program_tracing) { PTFI("traceBeginContext(\"apply\");\n", 3); }
 
    /* Generate code to retrieve the values assigned to the variables in the
     * matching phase. */
@@ -858,7 +858,7 @@ void generateAddRHSCode(Rule *rule)
          PTFI("traceCreatedEdge(edge);\n", 3);
       }
    }     
-   if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
+   if (program_tracing) { PTFI("traceEndContext(/* apply */);\n", 3); }
    PTF("}\n");
    return;
 }
@@ -869,7 +869,7 @@ void generateApplicationCode(Rule *rule)
    PTF("void apply%s(Morphism *morphism, bool record_changes)\n", rule->name);
    PTF("{\n");
 
-   if (program_tracing) { PTFI("traceBeginRuleApplicationContext();\n", 3); }
+   if (program_tracing) { PTFI("traceBeginContext(\"apply\");\n", 3); }
 
    /* Generate code to retrieve the values assigned to the variables in the
     * matching phase. */
@@ -1239,7 +1239,7 @@ void generateApplicationCode(Rule *rule)
          PTFI("traceCreatedEdge(edge);\n", 3);
       }
    }
-   if (program_tracing) { PTFI("traceEndRuleApplicationContext();\n", 3); }
+   if (program_tracing) { PTFI("traceEndContext(/* apply */);\n", 3); }
    PTFI("/* Reset the morphism. */\n", 3);
    PTFI("initialiseMorphism(morphism, host);\n}\n\n", 3);
 }
