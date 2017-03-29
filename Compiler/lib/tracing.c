@@ -361,7 +361,7 @@ void traceCreatedEdge(Edge* edge) {
 
 
 void traceCreatedNode(Node* node) {
-    PTT("<createNode id=\"%d\", root=\"%s\", mark=\"%d\" label=",
+    PTT("<createNode id=\"%d\" root=\"%s\" mark=\"%d\" label=",
         node->index, (node->root) ? "true" : "false", node->label.mark);
     traceGP2List(node->label.list);
     ATT(" />\n");
