@@ -314,7 +314,13 @@ static void generateProgramCode(GPCommand *command, CommandData data)
               if(stop_recording) new_data.record_changes = false;
               generateProgramCode(command, new_data);
               if(data.context == LOOP_BODY && commands->next != NULL)
-                 PTFI("if(!success) break;\n\n", data.indent);             
+              {
+                 PTFI("if(!success)\n", data.indent);
+                 PTFI("{\n", data.indent);
+                 if (program_tracing) { PTFI("traceEndContext(/* iteration */);\n", data.indent + 3); }
+                 PTFI("break;\n", data.indent + 3);             
+                 PTFI("}\n\n", data.indent);
+              }
               commands = commands->next;
            }           
            break;
