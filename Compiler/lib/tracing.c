@@ -171,6 +171,14 @@ void beginTraceFile(char* tracefile_path, char* program_name, char* host_graph_n
 }
 
 void finishTraceFile() {
+    /* Since we may be exiting early, we need to close any contexts that are
+    still open on the stack. */
+    char* context_type = peekContextStack();
+    while (strcmp(context_type, "trace") != 0) {
+        traceEndContext();
+        context_type = peekContextStack();
+    }
+
     /* Here we add the closing </trace> tag to the tracefile. We need to pop 
     the stack first to decrease the depth, so that the tag is printed at the
     correct indentation level. */
