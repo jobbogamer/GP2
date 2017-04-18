@@ -184,8 +184,14 @@ static void generateMatchingCode(Rule *rule, bool predicate)
    PTH("bool match%s(Morphism *morphism);\n\n", rule->name);
    PTF("\nbool match%s(Morphism *morphism)\n", rule->name);
    PTF("{\n");
-   PTFI("if(%d > host->number_of_nodes || %d > host->number_of_edges) return false;\n",
+
+   PTFI("if(%d > host->number_of_nodes || %d > host->number_of_edges)\n",
         3, rule->lhs->node_index, rule->lhs->edge_index);
+   PTFI("{\n", 3);
+   if (program_tracing) { PTFI("traceRuleMatch(morphism, false);\n", 6); }
+   PTFI("return false;\n", 6);
+   PTFI("}\n\n", 3);
+
    char item = searchplan->first->is_node ? 'n' : 'e';
    
    if(predicate)
